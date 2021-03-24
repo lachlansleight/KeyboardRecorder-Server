@@ -81,8 +81,8 @@ const RecordingCanvas = ({
         const ctx = canvasRef.current.getContext("2d");
         ctx.clearRect(0, 0, width, height);
 
-        const playingNotes: number[] = [];
-        for (let i = 0; i < 128; i++) playingNotes.push(false);
+        const playingNotes: { active: boolean; time: number; progress: number }[] = [];
+        for (let i = 0; i < 128; i++) playingNotes.push({ active: false, time: 0, progress: 0 });
 
         notes.forEach(note => {
             const x = getNoteX(note.pitch);
@@ -96,9 +96,13 @@ const RecordingCanvas = ({
                 ? 0
                 : (playbackTime - note.onTime) / (note.offTime - note.onTime);
             if (notePlaying) {
-                l = 90 - 40 * Math.min(1, noteProgress * 2);
+                playingNotes[note.pitch] = {
+                    active: true,
+                    time: playbackTime - note.onTime,
+                    progress: noteProgress,
+                };
+                l = 90 - 40 * Math.min(1, playingNotes[note.pitch].time * 2);
                 s = 100;
-                playingNotes[note.pitch] = noteProgress;
             }
             ctx.fillStyle = `hsl(${semitoneToHue(note.pitch % 12)}, ${s}%, ${l}%)`;
             ctx.beginPath();
@@ -120,13 +124,14 @@ const RecordingCanvas = ({
         for (let i = 21; i <= 109; i++) {
             const x = getNoteX(i);
             const hue = semitoneToHue(i % 12);
+            const playingValue = Math.max(playingNotes[i].time, playingNotes[i].progress);
 
             const isBlack = isBlackKey(i);
             if (isBlack) {
-                ctx.fillStyle = playingNotes[i] ? `hsl(${hue}, 100%, 50%)` : "#111";
+                ctx.fillStyle = playingNotes[i].active ? `hsl(${hue}, 100%, 50%)` : "#111";
                 ctx.fillRect(x, height - 20, noteWidth, 20);
             } else {
-                if (playingNotes[i]) {
+                if (playingNotes[i].active) {
                     ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
                     ctx.fillRect(x, height - 20, noteWidth, 20);
                 } else {
@@ -135,9 +140,9 @@ const RecordingCanvas = ({
                 }
             }
 
-            if (!playingNotes[i]) continue;
+            if (!playingNotes[i].active) continue;
             const gradient = ctx.createLinearGradient(x, height - 140, x, height - 20);
-            gradient.addColorStop(1, `hsla(${hue}, 100%, 50%, ${1.0 - playingNotes[i]})`);
+            gradient.addColorStop(1, `hsla(${hue}, 100%, 50%, ${1.0 - playingValue})`);
             gradient.addColorStop(0, `hsla(${hue}, 100%, 50%, 0)`);
             ctx.fillStyle = gradient;
             ctx.fillRect(x, height - 140, noteWidth, 120);
