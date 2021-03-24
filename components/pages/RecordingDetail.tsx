@@ -80,6 +80,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     const [canvasHeight, setCanvasHeight] = useState(800);
     const infoPanelRef = useRef<HTMLDivElement>();
     const playbackBarRef = useRef<HTMLDivElement>();
+    const [firstPlay, setFirstPlay] = useState(false);
 
     const piano = usePiano();
 
@@ -163,6 +164,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     };
 
     const play = useCallback(() => {
+        setFirstPlay(true);
         reqRef.current = requestAnimationFrame(runPlayback);
         setIsPlaying(true);
     }, [outputDevice]);
@@ -302,6 +304,10 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                     displayDuration={10}
                 />
                 <div className={style.playbackBar} ref={playbackBarRef}></div>
+
+                <div className={style.firstPlay} style={firstPlay ? { opacity: 0 } : null}>
+                    <p>Press space to play and stop</p>
+                </div>
             </div>
         </FullscreenLayout>
     );
