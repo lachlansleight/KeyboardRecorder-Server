@@ -28,12 +28,27 @@ const useProvideMidi = () => {
                 });
                 setEnabled(true);
 
-                const storedDevice = localStorage.getItem("midiDeviceName");
-                if (storedDevice) {
-                    const output = Midi.getOutputByName(storedDevice);
+                const storedOutputDevice = localStorage.getItem("midiOutputDeviceName");
+                if (storedOutputDevice) {
+                    const output = Midi.getOutputByName(storedOutputDevice);
                     if (output) {
-                        console.log("Setting MIDI device from local storage value");
+                        console.log(
+                            "Setting MIDI output device from local storage value",
+                            storedOutputDevice
+                        );
                         setOutput(output);
+                    }
+                }
+
+                const storedInputDevice = localStorage.getItem("midiInputDeviceName");
+                if (storedInputDevice) {
+                    const input = Midi.getInputByName(storedInputDevice);
+                    if (input) {
+                        console.log(
+                            "Setting MIDI input device from local storage value",
+                            storedInputDevice
+                        );
+                        setInput(input);
                     }
                 }
             }
