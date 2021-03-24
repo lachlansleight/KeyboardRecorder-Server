@@ -303,7 +303,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                     playbackTime={playbackTime}
                     displayDuration={10}
                     onClick={() => {
-                        if(isPlaying) stop();
+                        if (isPlaying) stop();
                         else play();
                     }}
                 />
