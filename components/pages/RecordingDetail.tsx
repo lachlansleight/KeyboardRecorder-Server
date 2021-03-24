@@ -20,18 +20,32 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     const startTimeRef = useRef<number>();
     const [playbackTime, setPlaybackTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [canvasWidth, setCanvasWidth] = useState(800);
+    const [canvasHeight, setCanvasHeight] = useState(800);
 
     useEffect(() => {
         setTitle(recording.title || "");
     }, [recording]);
 
+    useEffect(() => {
+        const handleResize = () => {
+            if (!parentRef.current) return;
+            setCanvasWidth(parentRef.current.offsetWidth);
+            setCanvasHeight(parentRef.current.offsetHeight);
+        };
+
+        handleResize();
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, [parentRef]);
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setEditingTitle(false);
-        await axios.patch(
-            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/${recording.id}.json`,
-            { title }
-        );
+        await axios.patch(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/${recording.id}.json`, {
+            title,
+        });
     };
 
     const runPlayback = (time: number) => {
@@ -126,8 +140,8 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                 )}
                 <RecordingCanvas
                     recording={recording}
-                    width={!parentRef.current ? 800 : parentRef.current.offsetWidth}
-                    height={!parentRef.current ? 600 : parentRef.current.offsetHeight}
+                    width={canvasWidth}
+                    height={canvasHeight}
                     playbackTime={playbackTime}
                     displayDuration={10}
                 />
