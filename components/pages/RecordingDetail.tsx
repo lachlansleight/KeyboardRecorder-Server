@@ -104,9 +104,12 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setEditingTitle(false);
-        await axios.patch(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${recording.id}.json`, {
-            title,
-        });
+        await axios.patch(
+            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${recording.id}.json`,
+            {
+                title,
+            }
+        );
     };
 
     const runPlayback = (time: number) => {
@@ -123,38 +126,44 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                     (totalTime === 0 && message.time === 0)
                 );
             });
-            if (outputDevice) {
-                messages.forEach(message => {
-                    if (message.type === "noteOn") {
+            messages.forEach(message => {
+                if (message.type === "noteOn") {
+                    if (outputDevice) {
                         outputDevice.playNote(message.pitch, 1, {
                             velocity: message.velocity / 127.0,
                         });
-                        if (piano && piano.loaded) {
-                            piano.keyDown({
-                                note: getNoteName(message.pitch),
-                                velocity: message.velocity / 127.0,
-                            });
-                        }
-                    } else if (message.type === "noteOff") {
+                    }
+                    if (piano && piano.loaded) {
+                        piano.keyDown({
+                            note: getNoteName(message.pitch),
+                            velocity: message.velocity / 127.0,
+                        });
+                    }
+                } else if (message.type === "noteOff") {
+                    if (outputDevice) {
                         outputDevice.stopNote(message.pitch, 1);
-                        if (piano && piano.loaded) {
-                            piano.keyUp({ note: getNoteName(message.pitch), velocity: 0 });
-                        }
-                    } else if (message.type === "pedalOn") {
+                    }
+                    if (piano && piano.loaded) {
+                        piano.keyUp({ note: getNoteName(message.pitch), velocity: 0 });
+                    }
+                } else if (message.type === "pedalOn") {
+                    if (outputDevice) {
                         outputDevice.sendControlChange(64, 0);
                         outputDevice.sendControlChange(64, 127);
-                        if (piano) {
-                            piano.pedalUp();
-                            piano.pedalDown();
-                        }
-                    } else if (message.type === "pedalOff") {
-                        outputDevice.sendControlChange(64, 0);
-                        if (piano) {
-                            piano.pedalUp();
-                        }
                     }
-                });
-            }
+                    if (piano) {
+                        piano.pedalUp();
+                        piano.pedalDown();
+                    }
+                } else if (message.type === "pedalOff") {
+                    if (outputDevice) {
+                        outputDevice.sendControlChange(64, 0);
+                    }
+                    if (piano) {
+                        piano.pedalUp();
+                    }
+                }
+            });
         }
 
         prevTimeRef.current = time;
@@ -177,9 +186,11 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
         setPlaybackTime(0);
 
         //also turn off all the MIDI notes and the pedal
-        outputDevice.sendControlChange(64, 0);
-        for (let i = 0; i <= 127; i++) {
-            outputDevice.stopNote(i, 1);
+        if (outputDevice) {
+            outputDevice.sendControlChange(64, 0);
+            for (let i = 0; i <= 127; i++) {
+                outputDevice.stopNote(i, 1);
+            }
         }
         if (piano) {
             piano.pedalUp();
@@ -201,7 +212,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
 
     useEffect(() => {
         return () => stop();
-    }, [])
+    }, []);
 
     useEffect(() => {
         if (!playbackBarRef.current) return;
