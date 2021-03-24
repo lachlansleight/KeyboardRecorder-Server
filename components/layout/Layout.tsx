@@ -11,8 +11,8 @@ const Layout = ({ children }: { children: JSX.Element[] | JSX.Element }): JSX.El
             </main>
             <footer>
                 <div className="container">
-                    <p>&copy; HeartVR 2021</p>
-                    <p>Version 0.22.0</p>
+                    <p>&copy; KeyboardRecorder 2021</p>
+                    <p>Version 0.0.1</p>
                 </div>
             </footer>
         </div>

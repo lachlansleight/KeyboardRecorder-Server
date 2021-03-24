@@ -1,18 +1,22 @@
 export type MessageType = "noteOn" | "noteOff" | "pedalOn" | "pedalOff";
 
 export interface Recording {
-    recordedAt: Date,
-    duration: number,
-    semitones: number[],
-    averageVelocity: number,
-    velocitySpread: number,
-    messageCount: number,
-    messages: Message[]
-};
+    recordedAt: Date;
+    duration: number;
+    semitones: number[];
+    averageVelocity: number;
+    velocitySpread: number;
+    messageCount: number;
+    messages: Message[];
+
+    id?: string;
+    title?: string;
+    starred?: boolean;
+}
 
 export interface Message {
-    type: MessageType,
-    pitch: number,
-    velocity: number,
-    time: number
+    type: MessageType;
+    pitch: number;
+    velocity: number;
+    time: number;
 }

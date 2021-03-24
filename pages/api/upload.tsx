@@ -6,26 +6,30 @@ import { parseRecording } from "../../lib/data/parse";
 //todo
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     console.log("Received recording - /api/upload");
-    
+
     try {
-        if(!req.body) {
+        if (!req.body) {
+            const bytes = [];
             req.on("data", async chunk => {
-                const bytes = [];
-                for(let i = 0; i < chunk.length; i++) {
+                for (let i = 0; i < chunk.length; i++) {
                     bytes.push(chunk.readUInt8(i));
                 }
-                const recording = parseRecording(bytes);
-                await axios.post("https://midirecorder-default-rtdb.firebaseio.com/recordings.json", recording);
-                console.log(recording);
+                console.log("Received " + bytes.length + " bytes");
             });
 
-            req.on("end", () => {
+            req.on("end", async () => {
+                console.log("Data end");
+                const recording = parseRecording(bytes);
+                await axios.post(
+                    `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings.json`,
+                    recording
+                );
+                console.log(recording);
                 res.statusCode = 201;
-                res.json({success: true});
+                res.json({ success: true });
                 resolve();
-            })
+            });
         }
-        
     } catch (error) {
         console.error("Failed to upload recording: ", error);
         res.statusCode = error.statusCode || 200;
@@ -36,5 +40,5 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
 export const config = {
     api: {
         bodyParser: false,
-    }
-}
+    },
+};

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MidiOutputDevice from "../midi/MidiOutputDevice";
 
 import style from "./Header.module.scss";
 
@@ -14,6 +15,9 @@ const Header = (): JSX.Element => {
                         <Link href="/">
                             <a>Home</a>
                         </Link>
+                    </li>
+                    <li>
+                        <MidiOutputDevice />
                     </li>
                 </ul>
             </div>

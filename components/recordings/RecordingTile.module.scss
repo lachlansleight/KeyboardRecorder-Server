@@ -1,0 +1,43 @@
+.recordingTile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    height: 3rem;
+    border-radius: 2px;
+
+    p {
+        margin: 0;
+        font-size: 1.3rem;
+        text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.7);
+    }
+
+    button {
+        border: 0;
+        background-color: transparent;
+        opacity: 0;
+        transition: opacity 0.3s;
+        cursor: pointer;
+
+        svg {
+            color: var(--color-yellow-700);
+            -webkit-filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
+            filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
+            font-size: 1.7rem;
+
+            transition: color 0.3s;
+        }
+
+        &:hover {
+            svg {
+                color: white;
+            }
+        }
+    }
+
+    &:hover {
+        button {
+            opacity: 1;
+        }
+    }
+}

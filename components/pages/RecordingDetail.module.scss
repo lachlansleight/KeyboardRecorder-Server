@@ -1,0 +1,12 @@
+.recording {
+    height: calc(100vh - 55px - 35px - 50px - 1rem);
+    position: relative;
+
+    h1 {
+        text-align: center;
+        font-weight: normal;
+        font-size: 2.5rem;
+        position: absolute;
+        width: 100%;
+    }
+}
