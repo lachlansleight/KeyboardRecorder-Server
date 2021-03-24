@@ -15,12 +15,14 @@ const RecordingCanvas = ({
     height,
     playbackTime,
     displayDuration,
+    onClick
 }: {
     recording: Recording;
     width: number;
     height: number;
     playbackTime?: number;
     displayDuration?: number;
+    onClick?: () => void
 }): JSX.Element => {
     const canvasRef = useRef<HTMLCanvasElement>();
 
@@ -178,7 +180,7 @@ const RecordingCanvas = ({
         // }
     }, [canvasRef, notes, duration, width, height, playbackTime, displayDuration]);
 
-    return <canvas ref={canvasRef} width={width} height={height}></canvas>;
+    return <canvas ref={canvasRef} width={width} height={height} onClick={onClick}></canvas>;
 };
 
 export default RecordingCanvas;

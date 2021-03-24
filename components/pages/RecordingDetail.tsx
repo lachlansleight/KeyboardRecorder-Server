@@ -302,11 +302,15 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                     height={canvasHeight}
                     playbackTime={playbackTime}
                     displayDuration={10}
+                    onClick={() => {
+                        if(isPlaying) stop();
+                        else play();
+                    }}
                 />
                 <div className={style.playbackBar} ref={playbackBarRef}></div>
 
                 <div className={style.firstPlay} style={firstPlay ? { opacity: 0 } : null}>
-                    <p>Press space to play and stop</p>
+                    <p>Press space or tap the screen to play and stop</p>
                 </div>
             </div>
         </FullscreenLayout>
