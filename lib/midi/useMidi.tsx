@@ -22,20 +22,12 @@ const useProvideMidi = () => {
             if (err) {
                 console.error(`Failed to enable MIDI: `, err);
             } else {
-                console.log("Enabled MIDI successfully", {
-                    inputs: Midi.inputs,
-                    outputs: Midi.outputs,
-                });
                 setEnabled(true);
 
                 const storedOutputDevice = localStorage.getItem("midiOutputDeviceName");
                 if (storedOutputDevice) {
                     const output = Midi.getOutputByName(storedOutputDevice);
                     if (output) {
-                        console.log(
-                            "Setting MIDI output device from local storage value",
-                            storedOutputDevice
-                        );
                         setOutput(output);
                     }
                 }
@@ -44,10 +36,6 @@ const useProvideMidi = () => {
                 if (storedInputDevice) {
                     const input = Midi.getInputByName(storedInputDevice);
                     if (input) {
-                        console.log(
-                            "Setting MIDI input device from local storage value",
-                            storedInputDevice
-                        );
                         setInput(input);
                     }
                 }
