@@ -11,6 +11,7 @@ import RecordingCanvas from "../recordings/RecordingCanvas";
 import axios from "axios";
 import useMidi from "../../lib/midi/useMidi";
 import StarToggle from "../recordings/StarToggle";
+import usePiano from "../../lib/piano/usePiano";
 
 const durationToString = (duration: number): string => {
     let output = "";
@@ -31,6 +32,38 @@ const durationToString = (duration: number): string => {
     return output;
 };
 
+const getNoteName = (pitch: number) => {
+    const semitone = pitch % 12;
+    const octave = Math.floor((pitch - 12) / 12);
+    switch (semitone) {
+        case 0:
+            return "C" + octave;
+        case 1:
+            return "C#" + octave;
+        case 2:
+            return "D" + octave;
+        case 3:
+            return "D#" + octave;
+        case 4:
+            return "E" + octave;
+        case 5:
+            return "F" + octave;
+        case 6:
+            return "F#" + octave;
+        case 7:
+            return "G" + octave;
+        case 8:
+            return "G#" + octave;
+        case 9:
+            return "A" + octave;
+        case 10:
+            return "A#" + octave;
+        case 11:
+            return "B" + octave;
+    }
+    return "";
+};
+
 const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => {
     const { outputDevice } = useMidi();
     const router = useRouter();
@@ -47,6 +80,8 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     const [canvasHeight, setCanvasHeight] = useState(800);
     const infoPanelRef = useRef<HTMLDivElement>();
     const playbackBarRef = useRef<HTMLDivElement>();
+
+    const piano = usePiano();
 
     useEffect(() => {
         setTitle(recording.title || "");
@@ -93,15 +128,29 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                         outputDevice.playNote(message.pitch, 1, {
                             velocity: message.velocity / 127.0,
                         });
+                        if (piano && piano.loaded) {
+                            piano.keyDown({
+                                note: getNoteName(message.pitch),
+                                velocity: message.velocity / 127.0,
+                            });
+                        }
                     } else if (message.type === "noteOff") {
                         outputDevice.stopNote(message.pitch, 1);
+                        if (piano && piano.loaded) {
+                            piano.keyUp({ note: getNoteName(message.pitch), velocity: 0 });
+                        }
                     } else if (message.type === "pedalOn") {
                         outputDevice.sendControlChange(64, 0);
                         outputDevice.sendControlChange(64, 127);
-                        console.log("pedal on");
+                        if (piano) {
+                            piano.pedalUp();
+                            piano.pedalDown();
+                        }
                     } else if (message.type === "pedalOff") {
                         outputDevice.sendControlChange(64, 0);
-                        console.log("pedal off");
+                        if (piano) {
+                            piano.pedalUp();
+                        }
                     }
                 });
             }
@@ -129,6 +178,10 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
         outputDevice.sendControlChange(64, 0);
         for (let i = 0; i <= 127; i++) {
             outputDevice.stopNote(i, 1);
+        }
+        if (piano) {
+            piano.pedalUp();
+            piano.stopAll();
         }
     };
 

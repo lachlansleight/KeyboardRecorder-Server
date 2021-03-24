@@ -5,6 +5,7 @@ import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 
 import { MidiProvider } from "../lib/midi/useMidi";
+import { PianoProvider } from "../lib/piano/usePiano";
 
 import "./index.scss";
 
@@ -15,7 +16,9 @@ Router.events.on("routeChangeError", () => NProgress.done());
 function MyApp({ Component, pageProps }: AppProps): JSX.Element {
     return (
         <MidiProvider>
-            <Component {...pageProps} />
+            <PianoProvider options={{ velocities: 3 }}>
+                <Component {...pageProps} />
+            </PianoProvider>
         </MidiProvider>
     );
 }
