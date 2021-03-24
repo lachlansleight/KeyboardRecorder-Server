@@ -52,7 +52,6 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     }, [recording]);
 
     useEffect(() => {
-        console.log(recording);
         setMainClass(starred ? `${style.recordingTile} ${style.isStarred}` : style.recordingTile);
     }, [starred]);
 
