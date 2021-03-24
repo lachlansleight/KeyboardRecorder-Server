@@ -104,7 +104,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setEditingTitle(false);
-        await axios.patch(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/${recording.id}.json`, {
+        await axios.patch(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${recording.id}.json`, {
             title,
         });
     };
