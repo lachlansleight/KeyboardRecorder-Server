@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 
 import dayjs from "dayjs";
-import { FaStar, FaRegStar } from "react-icons/fa";
 
 import { Recording } from "../../lib/data/types";
 import style from "./RecordingTile.module.scss";
 import Link from "next/link";
 import { semitoneToHue } from "../../lib/utils";
+import StarToggle from "./StarToggle";
 
 interface GradientSemitone {
     semitone: number;
@@ -16,6 +16,10 @@ interface GradientSemitone {
 
 const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => {
     const [gradient, setGradient] = useState("");
+
+    const [mainClass, setMainClass] = useState(style.recordingTile);
+    const [starred, setStarred] = useState(recording.starred);
+
     useEffect(() => {
         if (!recording) return;
 
@@ -44,12 +48,16 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
             if (index > 0) totalProp += usefulSemitones[index - 1].proportion;
             return key;
         });
-        //console.log(`linear-gradient(90deg, ${keys.join(", ")})`)
         setGradient(`linear-gradient(90deg, ${keys.join(", ")})`);
     }, [recording]);
 
+    useEffect(() => {
+        console.log(recording);
+        setMainClass(starred ? `${style.recordingTile} ${style.isStarred}` : style.recordingTile);
+    }, [starred]);
+
     return (
-        <div className={style.recordingTile} style={{ background: gradient }}>
+        <div className={mainClass} style={{ background: gradient }}>
             <Link href={`/recording/${recording.id}`}>
                 <a>
                     <p>
@@ -58,7 +66,10 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                     </p>
                 </a>
             </Link>
-            <button>{recording.starred ? <FaStar /> : <FaRegStar />}</button>
+            <StarToggle
+                recording={recording}
+                onChange={(starred: boolean) => setStarred(starred)}
+            />
         </div>
     );
 };

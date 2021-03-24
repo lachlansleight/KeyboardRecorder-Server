@@ -6,9 +6,7 @@ const FullscreenLayout = ({ children }: { children: JSX.Element[] | JSX.Element 
     return (
         <div className={style.layout}>
             <Header />
-            <main className={style.fullscreen}>
-                {children}
-            </main>
+            <main className={style.fullscreen}>{children}</main>
             <footer>
                 <div className="container">
                     <p>&copy; KeyboardRecorder 2021</p>

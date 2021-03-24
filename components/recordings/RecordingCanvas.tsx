@@ -41,7 +41,11 @@ const RecordingCanvas = ({
                     notes.push(currentNote);
                     activeNotes = activeNotes.filter(n => n.pitch !== message.pitch);
                 }
-                activeNotes.push({ pitch: message.pitch, velocity: message.velocity, onTime: message.time });
+                activeNotes.push({
+                    pitch: message.pitch,
+                    velocity: message.velocity,
+                    onTime: message.time,
+                });
             } else if (message.type === "noteOff") {
                 const currentNote = activeNotes.find(note => note.pitch === message.pitch);
                 if (!currentNote) {
@@ -119,9 +123,7 @@ const RecordingCanvas = ({
 
             const isBlack = isBlackKey(i);
             if (isBlack) {
-                ctx.fillStyle = playingNotes[i]
-                    ? `hsl(${hue}, 100%, 50%)`
-                    : "#111";
+                ctx.fillStyle = playingNotes[i] ? `hsl(${hue}, 100%, 50%)` : "#111";
                 ctx.fillRect(x, height - 20, noteWidth, 20);
             } else {
                 if (playingNotes[i]) {
@@ -133,7 +135,7 @@ const RecordingCanvas = ({
                 }
             }
 
-            if(!playingNotes[i]) continue;
+            if (!playingNotes[i]) continue;
             const gradient = ctx.createLinearGradient(x, height - 140, x, height - 20);
             gradient.addColorStop(1, `hsla(${hue}, 100%, 50%, ${1.0 - playingNotes[i]})`);
             gradient.addColorStop(0, `hsla(${hue}, 100%, 50%, 0)`);

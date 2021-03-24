@@ -9,8 +9,15 @@
         position: absolute;
         top: 1rem;
         width: 100%;
-        text-shadow: 5px 5px 5px rgba(0,0,0,0.7);
+        text-shadow: 5px 5px 5px rgba(0, 0, 0, 0.7);
         margin: 0;
+        opacity: 1;
+        transition: opacity 0.5s;
+    }
+
+    h1.playing {
+        opacity: 0;
+        transition: opacity 5s;
     }
 }
 
@@ -18,11 +25,104 @@
     width: 100%;
     position: absolute;
     top: 1rem;
-    
+
     input {
         font-size: 2.5rem;
-        background:none;
+        background: none;
         border: none;
         width: 100%;
+        text-align: center;
+        padding: 0;
     }
+}
+
+.infoButton {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: 0;
+    font-size: 2.5rem;
+    border: 0;
+    color: var(--color-neutral-800);
+    cursor: pointer;
+    border-radius: 50%;
+    transition: color 0.3s;
+
+    &:hover {
+        color: #fff;
+    }
+}
+
+.starButton {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: 0;
+    font-size: 2.5rem;
+    border: 0;
+    color: var(--color-neutral-800);
+    cursor: pointer;
+    border-radius: 50%;
+    transition: color 0.3s;
+
+    &:hover {
+        color: #fff;
+    }
+}
+
+.infoPanel {
+    position: absolute;
+    right: -24rem;
+    height: 100%;
+    background-color: var(--color-neutral-200);
+    width: 24rem;
+    padding: 1rem;
+    border-left: 1px solid var(--color-neutral-400);
+
+    transition: right 0.3s;
+
+    h2 {
+        margin: 0.4rem 0 1.4rem 0;
+        text-align: center;
+    }
+
+    > div {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    label {
+        text-align: right;
+        width: 40%;
+        font-weight: bold;
+    }
+
+    p {
+        margin: 0 0 0 1rem;
+    }
+
+    .deleteButton {
+        width: 100%;
+        font-size: 1.1rem;
+        border: 0;
+        background-color: var(--color-red-300);
+        color: #fff;
+        padding: 0.5rem 0;
+        margin-top: 2rem;
+        border-radius: 2px;
+    }
+}
+
+.playbackBar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0%;
+    height: 3px;
+    background-color: #fff;
 }

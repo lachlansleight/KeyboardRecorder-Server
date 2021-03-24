@@ -1,6 +1,8 @@
 import { useState, useEffect, FormEvent, useRef, useCallback } from "react";
+import { useRouter } from "next/router";
 
 import dayjs from "dayjs";
+import { FaInfoCircle, FaWindowClose } from "react-icons/fa";
 
 import { Recording } from "../../lib/data/types";
 import style from "./RecordingDetail.module.scss";
@@ -8,9 +10,30 @@ import FullscreenLayout from "../layout/FullscreenLayout";
 import RecordingCanvas from "../recordings/RecordingCanvas";
 import axios from "axios";
 import useMidi from "../../lib/midi/useMidi";
+import StarToggle from "../recordings/StarToggle";
+
+const durationToString = (duration: number): string => {
+    let output = "";
+    const hours = Math.floor(duration / 3600);
+    const minutes = Math.floor((duration - hours * 3600) / 60);
+    const seconds = duration - minutes * 60 - hours * 3600;
+    if (hours > 0) {
+        output += hours + ":";
+        if (minutes > 10) output += minutes + ":";
+        else if (minutes > 0) output += "0" + minutes + ":";
+        else output += "00:";
+    } else if (minutes > 0) {
+        output += minutes + ":";
+    } else output += "00:";
+    if (seconds >= 10) output += seconds;
+    else if (seconds > 0) output += "0" + seconds;
+    else output += "00";
+    return output;
+};
 
 const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => {
     const { outputDevice } = useMidi();
+    const router = useRouter();
 
     const [title, setTitle] = useState("");
     const [editingTitle, setEditingTitle] = useState(false);
@@ -22,6 +45,8 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     const [isPlaying, setIsPlaying] = useState(false);
     const [canvasWidth, setCanvasWidth] = useState(800);
     const [canvasHeight, setCanvasHeight] = useState(800);
+    const infoPanelRef = useRef<HTMLDivElement>();
+    const playbackBarRef = useRef<HTMLDivElement>();
 
     useEffect(() => {
         setTitle(recording.title || "");
@@ -119,6 +144,36 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
         return () => window.removeEventListener("keydown", handleKey);
     }, [outputDevice, isPlaying]);
 
+    useEffect(() => {
+        if (!playbackBarRef.current) return;
+
+        if (!isPlaying || playbackTime === 0)
+            playbackBarRef.current.style.setProperty("width", "0%");
+        else
+            playbackBarRef.current.style.setProperty(
+                "width",
+                (100 * playbackTime) / recording.duration + "%"
+            );
+    }, [isPlaying, playbackTime, playbackBarRef]);
+
+    const deleteRecording = async () => {
+        if (!window.confirm("Really delete recording? This CANNOT be undone!")) return;
+
+        await axios.delete(
+            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${recording.id}.json`
+        );
+        router.push("/");
+    };
+
+    const showInfoPanel = () => {
+        if (!infoPanelRef.current) return;
+        infoPanelRef.current.style.setProperty("right", "0px");
+    };
+    const hideInfoPanel = () => {
+        if (!infoPanelRef.current) return;
+        infoPanelRef.current.style.setProperty("right", "-24rem");
+    };
+
     return (
         <FullscreenLayout>
             <div className={style.recording} ref={parentRef}>
@@ -140,10 +195,52 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                         />
                     </form>
                 ) : (
-                    <h1 onClick={() => setEditingTitle(true)}>
+                    <h1
+                        className={isPlaying ? style.playing : null}
+                        onClick={() => setEditingTitle(true)}
+                    >
                         {title || dayjs(recording.recordedAt).format("D MMM YYYY - h:mm A")}
                     </h1>
                 )}
+
+                <button className={style.infoButton} onClick={showInfoPanel}>
+                    <FaInfoCircle />
+                </button>
+                <StarToggle className={style.starButton} recording={recording} />
+                <div className={style.infoPanel} ref={infoPanelRef}>
+                    <h2>Recording Metadata</h2>
+                    <div className={style.infoButton} onClick={hideInfoPanel}>
+                        <FaWindowClose />
+                    </div>
+                    <div>
+                        <label>Record Time</label>
+                        <p>{dayjs(recording.recordedAt).format("h:mm a")}</p>
+                    </div>
+                    <div>
+                        <label>Record Date</label>
+                        <p>{dayjs(recording.recordedAt).format("DD MMMM YYYY")}</p>
+                    </div>
+                    <div>
+                        <label>Duration</label>
+                        <p>{durationToString(Math.round(recording.duration))}</p>
+                    </div>
+                    <div>
+                        <label>Message Count</label>
+                        <p>{recording.messageCount}</p>
+                    </div>
+                    <div>
+                        <label>Average Velocity</label>
+                        <p>{Math.round(recording.averageVelocity)}</p>
+                    </div>
+                    <div>
+                        <label>Velocity Spread</label>
+                        <p>{Math.round(recording.velocitySpread)}</p>
+                    </div>
+                    <button className={style.deleteButton} onClick={() => deleteRecording()}>
+                        Delete Recording
+                    </button>
+                </div>
+
                 <RecordingCanvas
                     recording={recording}
                     width={canvasWidth}
@@ -151,6 +248,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                     playbackTime={playbackTime}
                     displayDuration={10}
                 />
+                <div className={style.playbackBar} ref={playbackBarRef}></div>
             </div>
         </FullscreenLayout>
     );
