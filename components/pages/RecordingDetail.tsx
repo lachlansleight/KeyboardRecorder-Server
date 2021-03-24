@@ -200,6 +200,10 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     }, [outputDevice, isPlaying]);
 
     useEffect(() => {
+        return () => stop();
+    }, [])
+
+    useEffect(() => {
         if (!playbackBarRef.current) return;
 
         if (!isPlaying || playbackTime === 0)
