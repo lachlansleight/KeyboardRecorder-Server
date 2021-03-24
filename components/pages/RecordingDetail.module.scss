@@ -115,6 +115,12 @@
         padding: 0.5rem 0;
         margin-top: 2rem;
         border-radius: 2px;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover {
+            background-color: var(--color-red-400);
+        }
     }
 }
 
