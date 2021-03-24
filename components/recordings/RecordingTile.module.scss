@@ -4,6 +4,8 @@
     height: 4.5rem;
     border-radius: 2px;
     position: relative;
+    animation-name: popIn;
+    animation-duration: 0.3s;
 
     a {
         display: block;
@@ -59,6 +61,11 @@
             opacity: 1;
         }
     }
+}
+
+@keyframes popIn {
+    0% {transform: scale(0);}
+    100% {transform: scale(1);}
 }
 
 .isStarred {

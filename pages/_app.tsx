@@ -4,6 +4,7 @@ import { Router } from "next/router";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 
+import initFirebase from "../lib/initFirebase";
 import { MidiProvider } from "../lib/midi/useMidi";
 import { PianoProvider } from "../lib/piano/usePiano";
 
@@ -14,6 +15,7 @@ Router.events.on("routeChangeComplete", () => NProgress.done());
 Router.events.on("routeChangeError", () => NProgress.done());
 
 function MyApp({ Component, pageProps }: AppProps): JSX.Element {
+    initFirebase();
     return (
         <MidiProvider>
             <PianoProvider options={{ velocities: 3 }}>
