@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 
 import { Recording } from "../../lib/data/types";
 import style from "./RecordingDetail.module.scss";
-import Layout from "../layout/Layout";
+import FullscreenLayout from "../layout/FullscreenLayout";
 import RecordingCanvas from "../recordings/RecordingCanvas";
 import axios from "axios";
 import useMidi from "../../lib/midi/useMidi";
@@ -120,10 +120,10 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     }, [outputDevice, isPlaying]);
 
     return (
-        <Layout>
+        <FullscreenLayout>
             <div className={style.recording} ref={parentRef}>
                 {editingTitle ? (
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} className={style.editTitleForm}>
                         <input
                             type="text"
                             id="title"
@@ -131,6 +131,12 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                 setTitle(e.target.value)
                             }
+                            onBlur={() => {
+                                setTitle("");
+                                setEditingTitle(false);
+                            }}
+                            placeholder="Enter new title"
+                            autoComplete="off"
                         />
                     </form>
                 ) : (
@@ -146,7 +152,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                     displayDuration={10}
                 />
             </div>
-        </Layout>
+        </FullscreenLayout>
     );
 };
 
