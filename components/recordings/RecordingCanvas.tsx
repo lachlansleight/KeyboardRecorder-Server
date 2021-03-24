@@ -4,6 +4,7 @@ import { isBlackKey, semitoneToHue } from "../../lib/utils";
 
 interface Note {
     pitch: number;
+    velocity: number;
     onTime: number;
     offTime?: number;
 }
@@ -40,7 +41,7 @@ const RecordingCanvas = ({
                     notes.push(currentNote);
                     activeNotes = activeNotes.filter(n => n.pitch !== message.pitch);
                 }
-                activeNotes.push({ pitch: message.pitch, onTime: message.time });
+                activeNotes.push({ pitch: message.pitch, velocity: message.velocity, onTime: message.time });
             } else if (message.type === "noteOff") {
                 const currentNote = activeNotes.find(note => note.pitch === message.pitch);
                 if (!currentNote) {
@@ -76,7 +77,7 @@ const RecordingCanvas = ({
         const ctx = canvasRef.current.getContext("2d");
         ctx.clearRect(0, 0, width, height);
 
-        const playingNotes: boolean[] = [];
+        const playingNotes: number[] = [];
         for (let i = 0; i < 128; i++) playingNotes.push(false);
 
         notes.forEach(note => {
@@ -84,16 +85,18 @@ const RecordingCanvas = ({
             const y1 = getTimeY(note.onTime);
             const y2 = getTimeY(note.offTime || note.onTime);
             let l = 50;
+            let s = 50 + note.velocity / 2.54;
             const notePlaying =
                 playbackTime && playbackTime > note.onTime && playbackTime < note.offTime;
             const noteProgress = !notePlaying
                 ? 0
                 : (playbackTime - note.onTime) / (note.offTime - note.onTime);
             if (notePlaying) {
-                l = 90 - 40 * noteProgress;
-                playingNotes[note.pitch] = true;
+                l = 90 - 40 * Math.min(1, noteProgress * 2);
+                s = 100;
+                playingNotes[note.pitch] = noteProgress;
             }
-            ctx.fillStyle = `hsl(${semitoneToHue(note.pitch % 12)}, 100%, ${l}%)`;
+            ctx.fillStyle = `hsl(${semitoneToHue(note.pitch % 12)}, ${s}%, ${l}%)`;
             ctx.beginPath();
             ctx.moveTo(x, y1);
             ctx.lineTo(x + noteWidth, y1);
@@ -111,21 +114,31 @@ const RecordingCanvas = ({
         ctx.fillStyle = "#FFF";
         ctx.fillRect(0, height - 20, width, 20);
         for (let i = 21; i <= 109; i++) {
+            const x = getNoteX(i);
+            const hue = semitoneToHue(i % 12);
+
             const isBlack = isBlackKey(i);
             if (isBlack) {
                 ctx.fillStyle = playingNotes[i]
-                    ? `hsl(${semitoneToHue(i % 12)}, 100%, 50%)`
+                    ? `hsl(${hue}, 100%, 50%)`
                     : "#111";
-                ctx.fillRect(getNoteX(i), height - 20, noteWidth, 20);
+                ctx.fillRect(x, height - 20, noteWidth, 20);
             } else {
                 if (playingNotes[i]) {
-                    ctx.fillStyle = `hsl(${semitoneToHue(i % 12)}, 100%, 50%)`;
-                    ctx.fillRect(getNoteX(i), height - 20, noteWidth, 20);
+                    ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                    ctx.fillRect(x, height - 20, noteWidth, 20);
                 } else {
                     ctx.strokeStyle = "#111";
-                    ctx.strokeRect(getNoteX(i), height - 20, noteWidth, 20);
+                    ctx.strokeRect(x, height - 20, noteWidth, 20);
                 }
             }
+
+            if(!playingNotes[i]) continue;
+            const gradient = ctx.createLinearGradient(x, height - 140, x, height - 20);
+            gradient.addColorStop(1, `hsla(${hue}, 100%, 50%, ${1.0 - playingNotes[i]})`);
+            gradient.addColorStop(0, `hsla(${hue}, 100%, 50%, 0)`);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x, height - 140, noteWidth, 120);
         }
 
         //proper key widths - but needs to be replicated for the actual notes...
