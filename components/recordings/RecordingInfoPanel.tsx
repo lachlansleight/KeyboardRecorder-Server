@@ -1,8 +1,10 @@
+import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/router";
 
 import dayjs from "dayjs";
 import axios from "axios";
 import { FaWindowClose } from "react-icons/fa";
+import ReactMarkdown from "react-markdown";
 
 import { Recording } from "../../lib/data/types";
 
@@ -38,6 +40,9 @@ const RecordingInfoPanel = ({
 }): JSX.Element => {
     const router = useRouter();
 
+    const [note, setNote] = useState("");
+    const [editingNote, setEditingNote] = useState(false);
+
     const deleteRecording = async () => {
         if (!window.confirm("Really delete recording? This CANNOT be undone!")) return;
 
@@ -52,39 +57,84 @@ const RecordingInfoPanel = ({
         onCloseClicked();
     };
 
+    useEffect(() => {
+        if (!recording) return;
+        setNote(recording.note);
+    }, [recording]);
+
+    const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+        setNote(e.target.value);
+    };
+
+    const finishEditingNote = () => {
+        const applyNote = async () => {
+            await axios.patch(
+                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${recording.id}.json`,
+                {
+                    note,
+                }
+            );
+        };
+
+        setEditingNote(false);
+        applyNote();
+    };
+
     return (
         <div className={style.infoPanel} style={showing ? { right: "0px" } : null}>
             <h2>Recording Metadata</h2>
             <div className={style.closeButton} onClick={handleCloseClicked}>
                 <FaWindowClose />
             </div>
-            <div>
-                <label>Record Time</label>
-                <p>{dayjs(recording.recordedAt).format("h:mm a")}</p>
+            <div className={style.infoPanelInner}>
+                <div>
+                    <div>
+                        <label>Record Time</label>
+                        <p>{dayjs(recording.recordedAt).format("h:mm a")}</p>
+                    </div>
+                    <div>
+                        <label>Record Date</label>
+                        <p>{dayjs(recording.recordedAt).format("DD MMMM YYYY")}</p>
+                    </div>
+                    <div>
+                        <label>Duration</label>
+                        <p>{durationToString(Math.round(recording.duration))}</p>
+                    </div>
+                    <div>
+                        <label>Message Count</label>
+                        <p>{recording.messageCount}</p>
+                    </div>
+                    <div>
+                        <label>Average Velocity</label>
+                        <p>{Math.round(recording.averageVelocity)}</p>
+                    </div>
+                    <div>
+                        <label>Velocity Spread</label>
+                        <p>{Math.round(recording.velocitySpread)}</p>
+                    </div>
+                    <div className={style.note}>
+                        <label>Note</label>
+                        {editingNote ? (
+                            <div>
+                                <textarea
+                                    id="note"
+                                    value={note}
+                                    onChange={handleChange}
+                                    onBlur={finishEditingNote}
+                                ></textarea>
+                                <button onClick={finishEditingNote}>Set Note</button>
+                            </div>
+                        ) : (
+                            <div onClick={() => setEditingNote(true)}>
+                                <ReactMarkdown source={note || "Click to enter a note"} />
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <button className={style.deleteButton} onClick={() => deleteRecording()}>
+                    Delete Recording
+                </button>
             </div>
-            <div>
-                <label>Record Date</label>
-                <p>{dayjs(recording.recordedAt).format("DD MMMM YYYY")}</p>
-            </div>
-            <div>
-                <label>Duration</label>
-                <p>{durationToString(Math.round(recording.duration))}</p>
-            </div>
-            <div>
-                <label>Message Count</label>
-                <p>{recording.messageCount}</p>
-            </div>
-            <div>
-                <label>Average Velocity</label>
-                <p>{Math.round(recording.averageVelocity)}</p>
-            </div>
-            <div>
-                <label>Velocity Spread</label>
-                <p>{Math.round(recording.velocitySpread)}</p>
-            </div>
-            <button className={style.deleteButton} onClick={() => deleteRecording()}>
-                Delete Recording
-            </button>
         </div>
     );
 };

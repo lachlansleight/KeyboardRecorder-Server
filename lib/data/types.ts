@@ -12,6 +12,7 @@ export interface Recording {
     id?: string;
     title?: string;
     starred?: boolean;
+    note?: string;
 }
 
 export interface Message {
