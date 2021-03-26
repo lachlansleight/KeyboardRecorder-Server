@@ -1,6 +1,23 @@
 .recording {
     height: calc(100vh - 55px - 35px);
     position: relative;
+}
+
+.title {
+    form {
+        width: 100%;
+        position: absolute;
+        top: 1rem;
+
+        input {
+            font-size: 2.5rem;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: center;
+            padding: 0;
+        }
+    }
 
     h1 {
         text-align: center;
@@ -14,25 +31,12 @@
         opacity: 1;
         transition: opacity 0.5s;
     }
-
-    h1.playing {
-        opacity: 0;
-        transition: opacity 5s;
-    }
 }
 
-.editTitleForm {
-    width: 100%;
-    position: absolute;
-    top: 1rem;
-
-    input {
-        font-size: 2.5rem;
-        background: none;
-        border: none;
-        width: 100%;
-        text-align: center;
-        padding: 0;
+.playingTitle {
+    h1 {
+        opacity: 0;
+        transition: opacity 5s;
     }
 }
 
@@ -71,56 +75,6 @@
 
     &:hover {
         color: #fff;
-    }
-}
-
-.infoPanel {
-    position: absolute;
-    right: -24rem;
-    height: 100%;
-    background-color: var(--color-neutral-200);
-    width: 24rem;
-    padding: 1rem;
-    border-left: 1px solid var(--color-neutral-400);
-
-    transition: right 0.3s;
-
-    h2 {
-        margin: 0.4rem 0 1.4rem 0;
-        text-align: center;
-    }
-
-    > div {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    label {
-        text-align: right;
-        width: 40%;
-        font-weight: bold;
-    }
-
-    p {
-        margin: 0 0 0 1rem;
-    }
-
-    .deleteButton {
-        width: 100%;
-        font-size: 1.1rem;
-        border: 0;
-        background-color: var(--color-red-300);
-        color: #fff;
-        padding: 0.5rem 0;
-        margin-top: 2rem;
-        border-radius: 2px;
-        cursor: pointer;
-        transition: all 0.3s;
-
-        &:hover {
-            background-color: var(--color-red-400);
-        }
     }
 }
 

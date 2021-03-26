@@ -1,0 +1,92 @@
+import { useRouter } from "next/router";
+
+import dayjs from "dayjs";
+import axios from "axios";
+import { FaWindowClose } from "react-icons/fa";
+
+import { Recording } from "../../lib/data/types";
+
+import style from "./RecordingInfoPanel.module.scss";
+
+const durationToString = (duration: number): string => {
+    let output = "";
+    const hours = Math.floor(duration / 3600);
+    const minutes = Math.floor((duration - hours * 3600) / 60);
+    const seconds = duration - minutes * 60 - hours * 3600;
+    if (hours > 0) {
+        output += hours + ":";
+        if (minutes > 10) output += minutes + ":";
+        else if (minutes > 0) output += "0" + minutes + ":";
+        else output += "00:";
+    } else if (minutes > 0) {
+        output += minutes + ":";
+    } else output += "00:";
+    if (seconds >= 10) output += seconds;
+    else if (seconds > 0) output += "0" + seconds;
+    else output += "00";
+    return output;
+};
+
+const RecordingInfoPanel = ({
+    recording,
+    showing,
+    onCloseClicked,
+}: {
+    recording: Recording;
+    showing?: boolean;
+    onCloseClicked?: () => void;
+}): JSX.Element => {
+    const router = useRouter();
+
+    const deleteRecording = async () => {
+        if (!window.confirm("Really delete recording? This CANNOT be undone!")) return;
+
+        await axios.delete(
+            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${recording.id}.json`
+        );
+        router.push("/");
+    };
+
+    const handleCloseClicked = () => {
+        if (!onCloseClicked) return;
+        onCloseClicked();
+    };
+
+    return (
+        <div className={style.infoPanel} style={showing ? { right: "0px" } : null}>
+            <h2>Recording Metadata</h2>
+            <div className={style.closeButton} onClick={handleCloseClicked}>
+                <FaWindowClose />
+            </div>
+            <div>
+                <label>Record Time</label>
+                <p>{dayjs(recording.recordedAt).format("h:mm a")}</p>
+            </div>
+            <div>
+                <label>Record Date</label>
+                <p>{dayjs(recording.recordedAt).format("DD MMMM YYYY")}</p>
+            </div>
+            <div>
+                <label>Duration</label>
+                <p>{durationToString(Math.round(recording.duration))}</p>
+            </div>
+            <div>
+                <label>Message Count</label>
+                <p>{recording.messageCount}</p>
+            </div>
+            <div>
+                <label>Average Velocity</label>
+                <p>{Math.round(recording.averageVelocity)}</p>
+            </div>
+            <div>
+                <label>Velocity Spread</label>
+                <p>{Math.round(recording.velocitySpread)}</p>
+            </div>
+            <button className={style.deleteButton} onClick={() => deleteRecording()}>
+                Delete Recording
+            </button>
+        </div>
+    );
+};
+
+export default RecordingInfoPanel;
