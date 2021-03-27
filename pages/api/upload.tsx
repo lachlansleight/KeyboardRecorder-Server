@@ -7,34 +7,60 @@ import { parseRecording } from "../../lib/data/parse";
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     console.log("Received recording - /api/upload");
 
-    try {
-        if (!req.body) {
-            const bytes = [];
-            req.on("data", async chunk => {
-                for (let i = 0; i < chunk.length; i++) {
-                    bytes.push(chunk.readUInt8(i));
-                }
-                console.log("Received " + bytes.length + " bytes");
-            });
-
-            req.on("end", async () => {
-                console.log("Data end");
-                const recording = parseRecording(bytes);
-                await axios.post(
-                    `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings.json`,
-                    recording
-                );
-                console.log(recording);
-                res.statusCode = 201;
-                res.json({ success: true });
-                resolve();
-            });
-        }
-    } catch (error) {
-        console.error("Failed to upload recording: ", error);
-        res.statusCode = error.statusCode || 200;
-        res.json(error);
+    if (req.body) {
+        res.statusCode = 400;
+        res.json({ success: false });
+        resolve();
+        return;
     }
+
+    const bytes: number[] = [];
+    const errors = [];
+    req.on("data", async chunk => {
+        try {
+            for (let i = 0; i < chunk.length; i++) {
+                bytes.push(chunk.readUInt8(i));
+            }
+            console.log("Received " + bytes.length + " bytes");
+        } catch (error) {
+            errors.push("Failed to read bytes from chunk: " + error);
+        }
+    });
+
+    if (errors) {
+        await axios.post(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json`, {
+            readErrors: errors,
+            timestamp: new Date(),
+        });
+        res.statusCode = 500;
+        res.json({ success: false });
+        resolve();
+        return;
+    }
+
+    req.on("end", async () => {
+        try {
+            const recording = parseRecording(bytes);
+            await axios.post(
+                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings.json`,
+                recording
+            );
+            console.log(recording);
+            res.statusCode = 201;
+            res.json({ success: true });
+            resolve();
+        } catch (error) {
+            await axios.post(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json`, {
+                parseError: error,
+                timestamp: new Date(),
+                rawData: bytes.join(","),
+            });
+            res.statusCode = 500;
+            res.json({ success: false });
+            resolve();
+            return;
+        }
+    });
 };
 
 export const config = {
