@@ -27,7 +27,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         }
     });
 
-    if (errors) {
+    if (errors.length > 0) {
         await axios.post(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json`, {
             readErrors: errors,
             timestamp: new Date(),
