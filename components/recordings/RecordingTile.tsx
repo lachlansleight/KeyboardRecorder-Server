@@ -46,17 +46,25 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
             .map((t, index) => {
                 return {
                     semitone: index,
-                    proportion: Math.round(t * 100),
+                    proportion: t,
                     hue: semitoneToHue(index),
                 };
             })
-            .filter(t => t.proportion > 0)
-            .sort((a, b) => a.proportion - b.proportion);
+            .filter(t => t.proportion > 0);
 
-        const mainHue = newSemitones.slice(-1)[0].hue;
-        const usefulSemitones = newSemitones.sort(
-            (a, b) => Math.abs(b.hue + 360 - mainHue) - Math.abs(a.hue + 360 - mainHue)
-        );
+        let sortedSemitones = [...newSemitones];
+        sortedSemitones.sort((a, b) => a.proportion - b.proportion);
+        sortedSemitones = sortedSemitones.reverse().slice(0, 5).reverse();
+
+        const proportionSum = sortedSemitones.reduce((acc, item) => acc + item.proportion, 0);
+
+        const mainHue = sortedSemitones.slice(-1)[0].hue;
+        const usefulSemitones = sortedSemitones
+            .sort((a, b) => Math.abs(b.hue + 360 - mainHue) - Math.abs(a.hue + 360 - mainHue))
+            .map(semi => ({
+                ...semi,
+                proportion: Math.round((100 * semi.proportion) / proportionSum),
+            }));
 
         let totalProp = 0;
         const keys = usefulSemitones.map((semi, index) => {
