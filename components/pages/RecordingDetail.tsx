@@ -24,6 +24,33 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     const [canvasHeight, setCanvasHeight] = useState(800);
     const [showingInfoPanel, setShowingInfoPanel] = useState(false);
 
+    const [activeElement, setActiveElement] = useState(null);
+    useEffect(() => {
+        const handleFocusIn = () => {
+            if (!document) {
+                setActiveElement(null);
+                return;
+            }
+            console.log("active is " + document.activeElement);
+            setActiveElement(document.activeElement);
+        };
+        const handleFocusOut = () => {
+            if (!document) {
+                setActiveElement(null);
+                return;
+            }
+            console.log("active is null");
+            setActiveElement(null);
+        };
+
+        document.addEventListener("focusin", handleFocusIn);
+        document.addEventListener("focusout", handleFocusOut);
+        return () => {
+            document.removeEventListener("focusin", handleFocusIn);
+            document.removeEventListener("focusout", handleFocusOut);
+        };
+    }, []);
+
     useEffect(() => {
         const handleResize = () => {
             if (!parentRef.current) return;
@@ -39,6 +66,8 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
 
     useEffect(() => {
         const handleKey = (e: KeyboardEvent) => {
+            if (activeElement) return;
+
             if (e.key === " ") {
                 setPlaying(!playing);
                 if (!playing) setFirstPlay(true);
@@ -47,7 +76,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
 
         window.addEventListener("keydown", handleKey);
         return () => window.removeEventListener("keydown", handleKey);
-    }, [playing]);
+    }, [playing, activeElement]);
 
     useEffect(() => {
         if (!playbackBarRef.current) return;
