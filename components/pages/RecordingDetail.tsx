@@ -60,6 +60,11 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
             );
     }, [playing, playbackTime, playbackBarRef]);
 
+    const handlePlaybackTimeChanged = (playbackTime: number) => {
+        setPlaybackTime(playbackTime);
+        if (playbackTime >= recording.duration) setPlaying(false);
+    };
+
     return (
         <FullscreenLayout>
             <div className={style.recording} ref={parentRef}>
@@ -75,7 +80,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                 <RecordingPlayer
                     recording={recording}
                     playing={playing}
-                    onPlaybackTimeChanged={setPlaybackTime}
+                    onPlaybackTimeChanged={handlePlaybackTimeChanged}
                 />
 
                 <div className={style.firstPlay} style={firstPlay ? { opacity: 0 } : null}>
