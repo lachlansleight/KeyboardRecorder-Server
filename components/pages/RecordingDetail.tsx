@@ -87,11 +87,11 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                     <p>Press space to play and stop</p>
                 </div>
 
-                <StarToggle className={style.starButton} recording={recording} />
                 <RecordingTitle
                     recording={recording}
                     className={`${style.title} ${playing ? style.playingTitle : null}`}
                 />
+                <StarToggle className={style.starButton} recording={recording} />
                 <button className={style.infoButton} onClick={() => setShowingInfoPanel(true)}>
                     <FaInfoCircle />
                 </button>
