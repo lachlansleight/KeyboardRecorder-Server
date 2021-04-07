@@ -7,17 +7,26 @@
     animation-name: popIn;
     animation-duration: 0.3s;
 
-    a {
-        display: block;
+    a,
+    div {
         width: 100%;
         height: 100%;
         padding: 1rem;
-        border: 2px solid rgba(255, 255, 255, 0);
         transition: all 0.3s;
+    }
+
+    a {
+        display: block;
+        border: 2px solid rgba(255, 255, 255, 0);
 
         &:hover {
             border: 2px solid rgba(255, 255, 255, 0.4);
         }
+    }
+
+    //when selecting
+    div {
+        cursor: pointer;
     }
 
     p {
@@ -76,4 +85,14 @@
     button {
         opacity: 1 !important;
     }
+}
+
+.selectionIndicator {
+    position: absolute;
+    right: 1rem;
+    font-size: 1.7rem;
+    top: calc(50% - 0.85rem);
+    color: white;
+    -webkit-filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
+    filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
 }

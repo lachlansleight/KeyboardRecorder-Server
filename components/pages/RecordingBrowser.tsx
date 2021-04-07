@@ -8,6 +8,8 @@ import "firebase/database";
 import style from "./RecordingBrowser.module.scss";
 import RecordingTile from "../recordings/RecordingTile";
 import dayjs from "dayjs";
+import { FaCheckCircle, FaTimesCircle, FaTrash } from "react-icons/fa";
+import axios from "axios";
 
 interface RecordingGroup {
     name: string;
@@ -15,6 +17,8 @@ interface RecordingGroup {
 }
 
 export const RecordingBrowser = (): JSX.Element => {
+    const [selecting, setSelecting] = useState(false);
+    const [selected, setSelected] = useState<string[]>([]);
     const [recordings, setRecordings] = useState<RecordingGroup[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -98,6 +102,29 @@ export const RecordingBrowser = (): JSX.Element => {
             });
     }, []);
 
+    const handleSelectChanged = (id: string) => {
+        if (selected.findIndex(i => i === id) !== -1) setSelected(selected.filter(i => i !== id));
+        else setSelected([...selected, id]);
+    };
+
+    const deleteSelected = () => {
+        const doDelete = async () => {
+            setLoading(true);
+            const response = await axios.post("/api/deleteMultiple", {
+                ids: selected,
+            });
+            if (response.data.error) {
+                console.error(response.data.error);
+            }
+            setSelecting(false);
+            setSelected([]);
+        };
+
+        if (!window.confirm(`Really delete ${selected.length} recordings? This CANNOT be undone!`))
+            return;
+        doDelete();
+    };
+
     return (
         <div>
             <Head>
@@ -105,7 +132,25 @@ export const RecordingBrowser = (): JSX.Element => {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <Layout>
-                <h1>Recordings</h1>
+                <div className={style.heading}>
+                    <h1>Recordings</h1>
+                    <div className={style.selectionButtons}>
+                        {selected.length > 0 ? (
+                            <button className={style.deleteButton} onClick={() => deleteSelected()}>
+                                <FaTrash />
+                            </button>
+                        ) : null}
+                        {selecting ? <span>{selected.length}</span> : null}
+                        <button
+                            onClick={() => {
+                                if (selecting) setSelected([]);
+                                setSelecting(!selecting);
+                            }}
+                        >
+                            {selecting ? <FaTimesCircle /> : <FaCheckCircle />}
+                        </button>
+                    </div>
+                </div>
                 {loading ? (
                     <p>Loading...</p>
                 ) : (
@@ -120,6 +165,22 @@ export const RecordingBrowser = (): JSX.Element => {
                                                 <RecordingTile
                                                     key={recording.recordedAt.valueOf()}
                                                     recording={recording}
+                                                    className={
+                                                        selecting
+                                                            ? selected.findIndex(
+                                                                  id => id === recording.id
+                                                              ) !== -1
+                                                                ? style.selected
+                                                                : style.notSelected
+                                                            : null
+                                                    }
+                                                    selecting={selecting}
+                                                    selected={
+                                                        selected.findIndex(
+                                                            id => id === recording.id
+                                                        ) !== -1
+                                                    }
+                                                    onSelectChange={handleSelectChanged}
                                                 />
                                             );
                                         })}

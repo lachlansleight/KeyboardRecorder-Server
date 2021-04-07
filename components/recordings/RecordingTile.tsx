@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 import dayjs from "dayjs";
+import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
 
 import { Recording } from "../../lib/data/types";
 import style from "./RecordingTile.module.scss";
@@ -33,7 +34,19 @@ const durationToString = (duration: number): string => {
     return output;
 };
 
-const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => {
+const RecordingTile = ({
+    recording,
+    className,
+    selecting,
+    selected,
+    onSelectChange,
+}: {
+    recording: Recording;
+    className?: string;
+    selecting?: boolean;
+    selected?: boolean;
+    onSelectChange?: (id: string) => void;
+}): JSX.Element => {
     const [gradient, setGradient] = useState("");
 
     const [mainClass, setMainClass] = useState(style.recordingTile);
@@ -83,9 +96,16 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     }, [starred]);
 
     return (
-        <div className={mainClass} style={{ background: gradient }}>
-            <Link href={`/recording/${recording.id}`}>
-                <a>
+        <div
+            className={`${mainClass} ${className ? className : ""}`}
+            style={{ background: gradient }}
+        >
+            {selecting ? (
+                <div
+                    onClick={() => {
+                        if (onSelectChange) onSelectChange(recording.id);
+                    }}
+                >
                     <p>
                         {recording.title ||
                             dayjs(recording.recordedAt).format("D MMM YYYY - h:mm A")}
@@ -93,12 +113,32 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                     <p className={style.duration}>
                         {durationToString(Math.round(recording.duration))}
                     </p>
-                </a>
-            </Link>
-            <StarToggle
-                recording={recording}
-                onChange={(starred: boolean) => setStarred(starred)}
-            />
+                </div>
+            ) : (
+                <Link href={`/recording/${recording.id}`}>
+                    <a>
+                        <p>
+                            {recording.title ||
+                                dayjs(recording.recordedAt).format("D MMM YYYY - h:mm A")}
+                        </p>
+                        <p className={style.duration}>
+                            {durationToString(Math.round(recording.duration))}
+                        </p>
+                    </a>
+                </Link>
+            )}
+            {selecting ? (
+                selected ? (
+                    <FaCheckCircle className={style.selectionIndicator} />
+                ) : (
+                    <FaRegCircle className={style.selectionIndicator} />
+                )
+            ) : (
+                <StarToggle
+                    recording={recording}
+                    onChange={(starred: boolean) => setStarred(starred)}
+                />
+            )}
         </div>
     );
 };
