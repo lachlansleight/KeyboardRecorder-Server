@@ -1,3 +1,4 @@
+import packageJson from "package.json";
 import Header from "./Header";
 
 import style from "./Layout.module.scss";
@@ -12,7 +13,7 @@ const Layout = ({ children }: { children: JSX.Element[] | JSX.Element }): JSX.El
             <footer>
                 <div className="container">
                     <p>&copy; KeyboardRecorder 2021</p>
-                    <p>Version 0.3.0</p>
+                    <p>Version {packageJson.version}</p>
                 </div>
             </footer>
         </div>

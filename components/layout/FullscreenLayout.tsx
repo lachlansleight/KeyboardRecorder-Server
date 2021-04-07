@@ -1,3 +1,4 @@
+import packageJson from "package.json";
 import Header from "./Header";
 
 import style from "./Layout.module.scss";
@@ -10,7 +11,7 @@ const FullscreenLayout = ({ children }: { children: JSX.Element[] | JSX.Element 
             <footer>
                 <div className="container">
                     <p>&copy; KeyboardRecorder 2021</p>
-                    <p>Version 0.2.0</p>
+                    <p>Version {packageJson.version}</p>
                 </div>
             </footer>
         </div>
