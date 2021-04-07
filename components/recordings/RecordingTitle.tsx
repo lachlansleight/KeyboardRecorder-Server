@@ -43,7 +43,7 @@ const RecordingTitle = ({
                             setTitle(e.target.value)
                         }
                         onBlur={() => {
-                            setTitle("");
+                            setTitle(recording.title || "");
                             setEditingTitle(false);
                         }}
                         placeholder="Enter new title"
