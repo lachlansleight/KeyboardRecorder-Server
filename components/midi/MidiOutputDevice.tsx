@@ -15,6 +15,10 @@ const MidiOutputDevice = (): JSX.Element => {
     const [midiOutputDevices, setMidiOutputDevices] = useState<JSX.Element[]>([defaultOption]);
 
     const setMidiOutputDevice = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        if (e.target.value === "Select MIDI Device") {
+            setOutputDevice(null);
+            return;
+        }
         const output = midi.getOutputByName(e.target.value);
         if (output) {
             setOutputDevice(output);

@@ -49,11 +49,13 @@ const useProvideMidi = () => {
         outputDevice: output,
         setInputDevice: (dev: Input) => {
             setInput(dev);
-            localStorage.setItem("midiInputDeviceName", dev.name);
+            if (dev) localStorage.setItem("midiInputDeviceName", dev.name);
+            else localStorage.removeItem("midiInputDeviceName");
         },
         setOutputDevice: (dev: Output) => {
             setOutput(dev);
-            localStorage.setItem("midiOutputDeviceName", dev.name);
+            if (dev) localStorage.setItem("midiOutputDeviceName", dev.name);
+            else localStorage.removeItem("midiOutputDeviceName");
         },
         enabled,
     };
