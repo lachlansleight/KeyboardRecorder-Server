@@ -40,10 +40,12 @@ const getNoteName = (pitch: number) => {
 const RecordingPlayer = ({
     recording,
     playing,
+    paused,
     onPlaybackTimeChanged,
 }: {
     recording: Recording;
     playing?: boolean;
+    paused?: boolean;
     onPlaybackTimeChanged?: (seconds: number) => void;
 }): JSX.Element => {
     const { outputDevice } = useMidi();
@@ -52,6 +54,7 @@ const RecordingPlayer = ({
     const reqRef = useRef<number>();
     const prevTimeRef = useRef<number>();
     const startTimeRef = useRef<number>();
+    const pausedRef = useRef<boolean>(false);
 
     const [playbackTime, setPlaybackTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -110,6 +113,12 @@ const RecordingPlayer = ({
         if (!startTimeRef.current) startTimeRef.current = time;
 
         const deltaTime = (time - (prevTimeRef.current || 0)) / 1000.0;
+        if(pausedRef.current) {
+            startTimeRef.current += deltaTime * 1000;
+            prevTimeRef.current = time;
+            reqRef.current = requestAnimationFrame(runPlayback);
+            return;
+        }
         const totalTime = (time - startTimeRef.current) / 1000.0;
         setPlaybackTime(totalTime);
 
@@ -140,6 +149,7 @@ const RecordingPlayer = ({
         if (reqRef.current) cancelAnimationFrame(reqRef.current);
         reqRef.current = requestAnimationFrame(runPlayback);
         setIsPlaying(true);
+        pausedRef.current = false;
     }, [outputDevice]);
 
     //stop playback
@@ -147,6 +157,7 @@ const RecordingPlayer = ({
         if (reqRef.current) cancelAnimationFrame(reqRef.current);
         startTimeRef.current = 0;
         prevTimeRef.current = 0;
+        pausedRef.current = false;
         setIsPlaying(false);
         setPlaybackTime(0);
 
@@ -172,9 +183,11 @@ const RecordingPlayer = ({
 
     //update play state based on playing prop
     useEffect(() => {
-        if (playing && !isPlaying) play();
-        else if (!playing && isPlaying) stop();
-    }, [playing, isPlaying]);
+        if(playing && !isPlaying) play();
+        else if(!playing && isPlaying) stop();
+
+        pausedRef.current = paused;
+    }, [playing, isPlaying, paused, pausedRef]);
 
     //send playback time callbacks
     useEffect(() => {

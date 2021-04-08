@@ -18,6 +18,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
     const playbackBarRef = useRef<HTMLDivElement>();
 
     const [playing, setPlaying] = useState(false);
+    const [paused, setPaused] = useState(false);
     const [firstPlay, setFirstPlay] = useState(false);
     const [playbackTime, setPlaybackTime] = useState(0);
     const [canvasWidth, setCanvasWidth] = useState(800);
@@ -70,8 +71,15 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
             if (activeElement) return;
 
             if (e.key === " ") {
-                setPlaying(!playing);
-                if (!playing) setFirstPlay(true);
+                if (!playing) {
+                    setPlaying(true);
+                    setFirstPlay(true);
+                } else setPaused(!paused);
+            } else if(e.key === "r") {
+                if(playing) {
+                    setPlaying(false);
+                    setPaused(false);
+                }
             } else if(e.key === "-" && displayDuration < recording.duration) {
                 setDisplayDuration(displayDuration * 1.5);
             } else if(e.key === "+" && displayDuration > 5) {
@@ -81,7 +89,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
 
         window.addEventListener("keydown", handleKey);
         return () => window.removeEventListener("keydown", handleKey);
-    }, [playing, activeElement, displayDuration, recording.duration]);
+    }, [playing, paused, activeElement, displayDuration, recording.duration]);
 
     useEffect(() => {
         if (!playbackBarRef.current) return;
@@ -115,6 +123,7 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                 <RecordingPlayer
                     recording={recording}
                     playing={playing}
+                    paused={paused}
                     onPlaybackTimeChanged={handlePlaybackTimeChanged}
                 />
 
