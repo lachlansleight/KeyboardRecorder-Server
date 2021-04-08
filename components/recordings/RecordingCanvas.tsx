@@ -107,17 +107,24 @@ const RecordingCanvas = ({
                 s = 100;
             }
             ctx.fillStyle = `hsl(${semitoneToHue(note.pitch % 12)}, ${s}%, ${l}%)`;
-            ctx.beginPath();
-            ctx.moveTo(x, y1);
-            ctx.lineTo(x + noteWidth, y1);
-            ctx.quadraticCurveTo(
-                x + noteWidth * 0.5,
-                y1 + (y2 - y1) * 0.5,
-                x + noteWidth * 0.5,
-                y2
-            );
-            ctx.quadraticCurveTo(x + noteWidth * 0.5, y1 + (y2 - y1) * 0.5, x, y1);
-            ctx.fill();
+            if(note.offTime && (note.offTime - note.onTime) > (displayDuration / 50)) {
+                const y3 = getTimeY(note.onTime + (displayDuration / 100));
+                ctx.fillRect(x, y1, noteWidth, y3 - y1 - 1);
+
+                ctx.beginPath();
+                ctx.moveTo(x, y3);
+                ctx.lineTo(x + noteWidth, y3);
+                ctx.quadraticCurveTo(
+                    x + noteWidth * 0.5,
+                    y3 + (y2 - y3) * 0.5,
+                    x + noteWidth * 0.5,
+                    y2
+                );
+                ctx.quadraticCurveTo(x + noteWidth * 0.5, y3 + (y2 - y3) * 0.5, x, y3);
+                ctx.fill();
+            } else {
+                ctx.fillRect(x, y1, noteWidth, y2 - y1);
+            }
             //ctx.fillRect(x, y1, noteWidth, y2 - y1);
         });
 
