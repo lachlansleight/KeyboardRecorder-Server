@@ -91,7 +91,8 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
 
     const handlePlaybackTimeChanged = (playbackTime: number) => {
         setPlaybackTime(playbackTime);
-        if (playbackTime >= recording.duration) setPlaying(false);
+        //three extra seconds for effect
+        if (playbackTime >= recording.duration + 3) setPlaying(false);
     };
 
     return (

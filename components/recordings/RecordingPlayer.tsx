@@ -130,7 +130,8 @@ const RecordingPlayer = ({
         prevTimeRef.current = time;
 
         //so long as there's still duration to go, continue playing
-        if (totalTime < recording.duration) reqRef.current = requestAnimationFrame(runPlayback);
+        //three extra seconds for effect
+        if (totalTime < recording.duration + 3) reqRef.current = requestAnimationFrame(runPlayback);
         else stop();
     };
 
