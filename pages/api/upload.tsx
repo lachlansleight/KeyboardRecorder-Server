@@ -3,9 +3,31 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { resolve } from "path";
 import { parseRecording } from "../../lib/data/parse";
 
-//todo
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     console.log("Received recording - /api/upload");
+    const auth = req.headers.authorization;
+    if(!auth) {
+        await axios.post(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json`, {
+            parseError: "No authorization mac address provided",
+            timestamp: new Date(),
+        });
+        console.error("No mac address provided");
+        res.status(401);
+        res.json(new Error("No authorization provided"));
+        return;
+    } else {
+        const mac = auth.split(" ").slice(-1)[0];
+        if(mac !== process.env.NEXT_PUBLIC_DEVICE_MAC_ADDRESS) {
+            await axios.post(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json`, {
+                parseError: "Device " + mac + " not authorized to upload",
+                timestamp: new Date(),
+            });
+            console.error("Device " + mac + " not authorized to upload");
+            res.status(401);
+            res.json(new Error("Device not authorized to upload"));
+            return;
+        }
+    }
 
     if (req.body) {
         res.statusCode = 400;
