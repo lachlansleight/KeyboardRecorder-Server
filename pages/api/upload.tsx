@@ -21,7 +21,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         await axios.post(
             `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json?auth=${idToken}`,
             {
-                parseError: "No authorization mac address provided",
+                error: "No authorization mac address provided",
+                type: "auth",
                 timestamp: new Date(),
             }
         );
@@ -35,7 +36,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
             await axios.post(
                 `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json?auth=${idToken}`,
                 {
-                    parseError: "Device " + mac + " not authorized to upload",
+                    error: "Device " + mac + " not authorized to upload",
+                    type: "auth",
                     timestamp: new Date(),
                 }
             );
@@ -70,7 +72,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         await axios.post(
             `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json?auth=${idToken}`,
             {
-                readErrors: errors,
+                error: errors,
+                type: "read",
                 timestamp: new Date(),
             }
         );
@@ -95,7 +98,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
             await axios.post(
                 `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json?auth=${idToken}`,
                 {
-                    parseError: error,
+                    error: error,
+                    type: "parse",
                     timestamp: new Date(),
                     rawData: bytes.join(","),
                 }
