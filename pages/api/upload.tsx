@@ -9,8 +9,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     const authResponse = await axios.post(
         `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY}`,
         {
-            email: process.env.FB_EMAIL,
-            password: process.env.FB_PASSWORD,
+            email: process.env.NEXT_PUBLIC_FB_EMAIL,
+            password: process.env.NEXT_PUBLIC_FB_PASSWORD,
             returnSecureToken: true,
         }
     );
