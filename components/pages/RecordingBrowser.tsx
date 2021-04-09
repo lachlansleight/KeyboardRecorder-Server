@@ -10,6 +10,7 @@ import RecordingTile from "../recordings/RecordingTile";
 import dayjs from "dayjs";
 import { FaCheckCircle, FaTimesCircle, FaTrash } from "react-icons/fa";
 import axios from "axios";
+import useAuth from "lib/auth/useAuth";
 
 interface RecordingGroup {
     name: string;
@@ -21,6 +22,7 @@ export const RecordingBrowser = (): JSX.Element => {
     const [selected, setSelected] = useState<string[]>([]);
     const [recordings, setRecordings] = useState<RecordingGroup[]>([]);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
     useEffect(() => {
         firebase
@@ -134,22 +136,29 @@ export const RecordingBrowser = (): JSX.Element => {
             <Layout>
                 <div className={style.heading}>
                     <h1>Recordings</h1>
-                    <div className={style.selectionButtons}>
-                        {selected.length > 0 ? (
-                            <button className={style.deleteButton} onClick={() => deleteSelected()}>
-                                <FaTrash />
+                    {user ? (
+                        <div className={style.selectionButtons}>
+                            {selected.length > 0 ? (
+                                <button
+                                    className={style.deleteButton}
+                                    onClick={() => deleteSelected()}
+                                >
+                                    <FaTrash />
+                                </button>
+                            ) : null}
+                            {selecting ? <span>{selected.length}</span> : null}
+                            <button
+                                onClick={() => {
+                                    if (selecting) setSelected([]);
+                                    setSelecting(!selecting);
+                                }}
+                            >
+                                {selecting ? <FaTimesCircle /> : <FaCheckCircle />}
                             </button>
-                        ) : null}
-                        {selecting ? <span>{selected.length}</span> : null}
-                        <button
-                            onClick={() => {
-                                if (selecting) setSelected([]);
-                                setSelecting(!selecting);
-                            }}
-                        >
-                            {selecting ? <FaTimesCircle /> : <FaCheckCircle />}
-                        </button>
-                    </div>
+                        </div>
+                    ) : (
+                        <div className={style.selectionButtons}></div>
+                    )}
                 </div>
                 {loading ? (
                     <p>Loading...</p>

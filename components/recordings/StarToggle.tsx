@@ -1,4 +1,5 @@
 import axios from "axios";
+import useAuth from "lib/auth/useAuth";
 import { useState, useEffect } from "react";
 import { FaStar, FaRegStar, FaCircle } from "react-icons/fa";
 import { Recording } from "../../lib/data/types";
@@ -12,6 +13,7 @@ const StarToggle = ({
     recording: Recording;
     onChange?: (starred: boolean) => void;
 }): JSX.Element => {
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [starred, setStarred] = useState(false);
 
@@ -40,8 +42,8 @@ const StarToggle = ({
         <button
             className={className}
             onClick={toggleStar}
-            disabled={loading}
-            style={starred ? { color: "var(--color-yellow-600)" } : null}
+            disabled={loading || !user}
+            style={starred ? { color: "var(--color-yellow-600)" } : user ? null : { opacity: 0 }}
         >
             {loading ? <FaCircle /> : starred ? <FaStar /> : <FaRegStar />}
         </button>

@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 
 import { Recording } from "../../lib/data/types";
 import axios from "axios";
+import useAuth from "lib/auth/useAuth";
 
 const RecordingTitle = ({
     recording,
@@ -14,6 +15,7 @@ const RecordingTitle = ({
 }): JSX.Element => {
     const [editingTitle, setEditingTitle] = useState(false);
     const [title, setTitle] = useState("");
+    const { user } = useAuth();
 
     useEffect(() => {
         if (!recording) return;
@@ -51,7 +53,7 @@ const RecordingTitle = ({
                     />
                 </form>
             ) : (
-                <h1 onClick={() => setEditingTitle(true)}>
+                <h1 onClick={user ? () => setEditingTitle(true) : null}>
                     {title || dayjs(recording.recordedAt).format("D MMM YYYY - h:mm A")}
                 </h1>
             )}

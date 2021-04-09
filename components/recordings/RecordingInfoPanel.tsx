@@ -9,6 +9,7 @@ import ReactMarkdown from "react-markdown";
 import { Recording } from "../../lib/data/types";
 
 import style from "./RecordingInfoPanel.module.scss";
+import useAuth from "lib/auth/useAuth";
 
 const durationToString = (duration: number): string => {
     let output = "";
@@ -39,6 +40,7 @@ const RecordingInfoPanel = ({
     onCloseClicked?: () => void;
 }): JSX.Element => {
     const router = useRouter();
+    const { user } = useAuth();
 
     const [note, setNote] = useState("");
     const [editingNote, setEditingNote] = useState(false);
@@ -125,15 +127,19 @@ const RecordingInfoPanel = ({
                                 <button onClick={finishEditingNote}>Set Note</button>
                             </div>
                         ) : (
-                            <div onClick={() => setEditingNote(true)}>
-                                <ReactMarkdown source={note || "Click to enter a note"} />
+                            <div onClick={user ? () => setEditingNote(true) : null}>
+                                <ReactMarkdown
+                                    source={note || (user ? "Click to enter a note" : "")}
+                                />
                             </div>
                         )}
                     </div>
                 </div>
-                <button className={style.deleteButton} onClick={() => deleteRecording()}>
-                    Delete Recording
-                </button>
+                {user ? (
+                    <button className={style.deleteButton} onClick={() => deleteRecording()}>
+                        Delete Recording
+                    </button>
+                ) : null}
             </div>
         </div>
     );
