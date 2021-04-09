@@ -33,8 +33,17 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                 setActiveElement(null);
                 return;
             }
-            console.log("active is " + document.activeElement);
-            setActiveElement(document.activeElement);
+            switch (document.activeElement.tagName) {
+                case "INPUT":
+                    setActiveElement(document.activeElement);
+                    break;
+                case "TEXTAREA":
+                    setActiveElement(document.activeElement);
+                    break;
+                case "SELECT":
+                    setActiveElement(document.activeElement);
+                    break;
+            }
         };
         const handleFocusOut = () => {
             if (!document) {
