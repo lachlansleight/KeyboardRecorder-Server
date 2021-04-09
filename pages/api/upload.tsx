@@ -5,12 +5,26 @@ import { parseRecording } from "../../lib/data/parse";
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     console.log("Received recording - /api/upload");
+
+    const authResponse = await axios.post(
+        `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY}`,
+        {
+            email: process.env.FB_EMAIL,
+            password: process.env.FB_PASSWORD,
+            returnSecureToken: true,
+        }
+    );
+    const idToken = authResponse.data.idToken;
+
     const auth = req.headers.authorization;
     if (!auth) {
-        await axios.post(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json`, {
-            parseError: "No authorization mac address provided",
-            timestamp: new Date(),
-        });
+        await axios.post(
+            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json?auth=${idToken}`,
+            {
+                parseError: "No authorization mac address provided",
+                timestamp: new Date(),
+            }
+        );
         console.error("No mac address provided");
         res.status(401);
         res.json(new Error("No authorization provided"));
@@ -18,10 +32,13 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     } else {
         const mac = auth.split(" ").slice(-1)[0];
         if (mac !== process.env.NEXT_PUBLIC_DEVICE_MAC_ADDRESS) {
-            await axios.post(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json`, {
-                parseError: "Device " + mac + " not authorized to upload",
-                timestamp: new Date(),
-            });
+            await axios.post(
+                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json?auth=${idToken}`,
+                {
+                    parseError: "Device " + mac + " not authorized to upload",
+                    timestamp: new Date(),
+                }
+            );
             console.error("Device " + mac + " not authorized to upload");
             res.status(401);
             res.json(new Error("Device not authorized to upload"));
@@ -50,10 +67,13 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     });
 
     if (errors.length > 0) {
-        await axios.post(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json`, {
-            readErrors: errors,
-            timestamp: new Date(),
-        });
+        await axios.post(
+            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json?auth=${idToken}`,
+            {
+                readErrors: errors,
+                timestamp: new Date(),
+            }
+        );
         res.statusCode = 500;
         res.json({ success: false });
         resolve();
@@ -72,11 +92,14 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
             res.json({ success: true });
             resolve();
         } catch (error) {
-            await axios.post(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json`, {
-                parseError: error,
-                timestamp: new Date(),
-                rawData: bytes.join(","),
-            });
+            await axios.post(
+                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json?auth=${idToken}`,
+                {
+                    parseError: error,
+                    timestamp: new Date(),
+                    rawData: bytes.join(","),
+                }
+            );
             res.statusCode = 500;
             res.json({ success: false });
             resolve();
