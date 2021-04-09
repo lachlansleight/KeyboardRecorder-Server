@@ -1,3 +1,4 @@
+import { AuthProvider } from "lib/auth/useAuth";
 import { AppProps } from "next/app";
 
 import { Router } from "next/router";
@@ -17,11 +18,13 @@ Router.events.on("routeChangeError", () => NProgress.done());
 function MyApp({ Component, pageProps }: AppProps): JSX.Element {
     initFirebase();
     return (
-        <MidiProvider>
-            <PianoProvider options={{ velocities: 3 }}>
-                <Component {...pageProps} />
-            </PianoProvider>
-        </MidiProvider>
+        <AuthProvider>
+            <MidiProvider>
+                <PianoProvider options={{ velocities: 3 }}>
+                    <Component {...pageProps} />
+                </PianoProvider>
+            </MidiProvider>
+        </AuthProvider>
     );
 }
 

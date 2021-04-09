@@ -107,8 +107,8 @@ const RecordingCanvas = ({
                 s = 100;
             }
             ctx.fillStyle = `hsl(${semitoneToHue(note.pitch % 12)}, ${s}%, ${l}%)`;
-            if(note.offTime && (note.offTime - note.onTime) > (displayDuration / 50)) {
-                const y3 = getTimeY(note.onTime + (displayDuration / 100));
+            if (note.offTime && note.offTime - note.onTime > displayDuration / 50) {
+                const y3 = getTimeY(note.onTime + displayDuration / 100);
                 ctx.fillRect(x, y1, noteWidth, y3 - y1 - 1);
 
                 ctx.beginPath();

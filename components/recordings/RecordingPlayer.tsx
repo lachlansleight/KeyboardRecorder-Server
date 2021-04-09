@@ -113,7 +113,7 @@ const RecordingPlayer = ({
         if (!startTimeRef.current) startTimeRef.current = time;
 
         const deltaTime = (time - (prevTimeRef.current || 0)) / 1000.0;
-        if(pausedRef.current) {
+        if (pausedRef.current) {
             startTimeRef.current += deltaTime * 1000;
             prevTimeRef.current = time;
             reqRef.current = requestAnimationFrame(runPlayback);
@@ -183,8 +183,8 @@ const RecordingPlayer = ({
 
     //update play state based on playing prop
     useEffect(() => {
-        if(playing && !isPlaying) play();
-        else if(!playing && isPlaying) stop();
+        if (playing && !isPlaying) play();
+        else if (!playing && isPlaying) stop();
 
         pausedRef.current = paused;
     }, [playing, isPlaying, paused, pausedRef]);

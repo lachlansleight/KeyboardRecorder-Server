@@ -75,14 +75,14 @@ const RecordingTile = ({ recording }: { recording: Recording }): JSX.Element => 
                     setPlaying(true);
                     setFirstPlay(true);
                 } else setPaused(!paused);
-            } else if(e.key === "r") {
-                if(playing) {
+            } else if (e.key === "r") {
+                if (playing) {
                     setPlaying(false);
                     setPaused(false);
                 }
-            } else if(e.key === "-" && displayDuration < recording.duration) {
+            } else if (e.key === "-" && displayDuration < recording.duration) {
                 setDisplayDuration(displayDuration * 1.5);
-            } else if(e.key === "+" && displayDuration > 5) {
+            } else if (e.key === "+" && displayDuration > 5) {
                 setDisplayDuration(displayDuration / 1.5);
             }
         };
