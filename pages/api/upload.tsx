@@ -87,7 +87,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         try {
             const recording = parseRecording(bytes);
             await axios.post(
-                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings.json`,
+                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings.json?auth=${idToken}`,
                 recording
             );
             console.log(recording);
