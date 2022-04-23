@@ -2,7 +2,7 @@ import axios from "axios";
 import useAuth from "lib/auth/useAuth";
 import { useState, useEffect } from "react";
 import { FaStar, FaRegStar, FaCircle } from "react-icons/fa";
-import { Recording } from "../../lib/data/types";
+import { RecordingMetadata } from "../../lib/data/types";
 
 const StarToggle = ({
     className,
@@ -10,7 +10,7 @@ const StarToggle = ({
     onChange,
 }: {
     className?: string;
-    recording: Recording;
+    recording: RecordingMetadata;
     onChange?: (starred: boolean) => void;
 }): JSX.Element => {
     const { user } = useAuth();
@@ -26,10 +26,14 @@ const StarToggle = ({
         const doToggle = async () => {
             setLoading(true);
             const result = await axios.patch(
+                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${recording.id}.json`,
+                { starred: !starred }
+            );
+            const resultB = await axios.patch(
                 `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${recording.id}.json`,
                 { starred: !starred }
             );
-            console.log(result.data);
+            console.log(result.data, resultB.data);
             setStarred(result.data.starred);
             if (onChange) onChange(result.data.starred);
             setLoading(false);

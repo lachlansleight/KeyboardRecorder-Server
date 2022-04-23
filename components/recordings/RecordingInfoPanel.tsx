@@ -51,6 +51,9 @@ const RecordingInfoPanel = ({
         await axios.delete(
             `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${recording.id}.json`
         );
+        await axios.delete(
+            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${recording.id}.json`
+        );
         router.push("/");
     };
 
@@ -72,6 +75,12 @@ const RecordingInfoPanel = ({
         const applyNote = async () => {
             await axios.patch(
                 `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${recording.id}.json`,
+                {
+                    note,
+                }
+            );
+            await axios.patch(
+                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${recording.id}.json`,
                 {
                     note,
                 }

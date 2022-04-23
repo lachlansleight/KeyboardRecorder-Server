@@ -31,6 +31,12 @@ const RecordingTitle = ({
                 title,
             }
         );
+        await axios.patch(
+            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${recording.id}.json`,
+            {
+                title,
+            }
+        );
     };
 
     return (

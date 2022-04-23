@@ -11,16 +11,20 @@ This is just a quick rundown, if anyone actually wants to try and get it running
 
 ```json
 {
-  "rules": {
-    "recordings": {
-      ".read": true,
-      ".write": "auth.uid == '[YOUR_UID]'"
-    },
-    "errors": {
-      ".read": "auth.uid == '[YOUR_UID]'",
-      ".write": "auth.uid == '[YOUR_UID]'",
+    "rules": {
+        "recordings": {
+            ".read": true,
+            ".write": "auth.uid == '[YOUR_UID]'"
+        },
+        "recordingList": {
+            ".read": true,
+            ".write": "auth.uid == '[YOUR_UID]'"
+        },
+        "errors": {
+            ".read": "auth.uid == '[YOUR_UID]'",
+            ".write": "auth.uid == '[YOUR_UID]'"
+        }
     }
-  }
 }
 ```
 

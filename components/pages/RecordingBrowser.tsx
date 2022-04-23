@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
 import Layout from "../layout/Layout";
-import { Recording } from "../../lib/data/types";
+import { RecordingMetadata } from "../../lib/data/types";
 import firebase from "firebase/app";
 import "firebase/database";
 
@@ -14,7 +14,7 @@ import useAuth from "lib/auth/useAuth";
 
 interface RecordingGroup {
     name: string;
-    recordings: Recording[];
+    recordings: RecordingMetadata[];
 }
 
 export const RecordingBrowser = (): JSX.Element => {
@@ -27,7 +27,7 @@ export const RecordingBrowser = (): JSX.Element => {
     useEffect(() => {
         firebase
             .database()
-            .ref("recordings")
+            .ref("recordingList")
             .on("value", snapshot => {
                 //const newRecordingData = {...snapshot.val(), id: snapshot.key};
                 const sortedRecordings = Object.keys(snapshot.val())

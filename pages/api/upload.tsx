@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ExtractRecordingMetadata } from "lib/data/types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { resolve } from "path";
 import { parseRecording } from "../../lib/data/parse";
@@ -85,12 +86,22 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
 
     req.on("end", async () => {
         try {
+            //post the main recording
             const recording = parseRecording(bytes);
-            await axios.post(
-                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings.json?auth=${idToken}`,
-                recording
+            const id = (
+                await axios.post(
+                    `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings.json?auth=${idToken}`,
+                    recording
+                )
+            ).data.name;
+
+            //duplicate a slightly simplified metadata to the list for displaying in lists
+            const recordingMetadata = ExtractRecordingMetadata(recording);
+            await axios.put(
+                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${id}.json?auth=${idToken}`,
+                recordingMetadata
             );
-            console.log(recording);
+            console.log(recordingMetadata);
             res.statusCode = 201;
             res.json({ success: true });
             resolve();

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
 
-import { Recording } from "../../lib/data/types";
+import { RecordingMetadata } from "../../lib/data/types";
 import style from "./RecordingTile.module.scss";
 import Link from "next/link";
 import { semitoneToHue } from "../../lib/utils";
@@ -41,7 +41,7 @@ const RecordingTile = ({
     selected,
     onSelectChange,
 }: {
-    recording: Recording;
+    recording: RecordingMetadata;
     className?: string;
     selecting?: boolean;
     selected?: boolean;

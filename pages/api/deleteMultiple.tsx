@@ -1,6 +1,27 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
+const removeIds = async (
+    location: "recordings" | "recordingList",
+    ids: string[],
+    idToken: string
+) => {
+    const currentResponse = await axios(
+        `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/${location}.json`
+    );
+    const filteredRecordings = Object.keys(currentResponse.data).filter(key => {
+        return ids.findIndex((k: string) => k === key) === -1;
+    });
+    const newRecordings = {};
+    filteredRecordings.forEach(key => {
+        newRecordings[key] = currentResponse.data[key];
+    });
+    await axios.put(
+        `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/${location}.json?auth=${idToken}`,
+        newRecordings
+    );
+};
+
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     try {
         const authResponse = await axios.post(
@@ -13,20 +34,9 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         );
         const idToken = authResponse.data.idToken;
 
-        const currentResponse = await axios(
-            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings.json`
-        );
-        const filteredRecordings = Object.keys(currentResponse.data).filter(key => {
-            return req.body.ids.findIndex((k: string) => k === key) === -1;
-        });
-        const newRecordings = {};
-        filteredRecordings.forEach(key => {
-            newRecordings[key] = currentResponse.data[key];
-        });
-        await axios.put(
-            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings.json?auth=${idToken}`,
-            newRecordings
-        );
+        await removeIds("recordings", req.body.ids, idToken);
+        await removeIds("recordingList", req.body.ids, idToken);
+
         res.status(200);
         res.json({ success: true });
     } catch (error) {
