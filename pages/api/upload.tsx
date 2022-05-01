@@ -3,8 +3,11 @@ import { ExtractRecordingMetadata } from "lib/data/types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { resolve } from "path";
 import { parseRecording } from "../../lib/data/parse";
+import doCors from "lib/doCors";
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
+    await doCors(req, res);
+    
     console.log("Received recording - /api/upload");
 
     const authResponse = await axios.post(

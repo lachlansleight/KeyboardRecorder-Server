@@ -1,6 +1,6 @@
 {
     "name": "keyboard-recorder-server",
-    "version": "0.7.0",
+    "version": "0.7.1",
     "scripts": {
         "dev": "next dev",
         "build": "next build",
@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "axios": "^0.21.1",
+        "cors": "^2.8.5",
         "dayjs": "^1.10.4",
         "firebase": "^8.3.1",
         "next": "latest",
@@ -39,6 +40,7 @@
     },
     "devDependencies": {
         "@testing-library/react": "^11.2.5",
+        "@types/cors": "^2.8.12",
         "@types/jest": "^26.0.20",
         "@types/node": "^14.14.25",
         "@types/react": "^17.0.1",
