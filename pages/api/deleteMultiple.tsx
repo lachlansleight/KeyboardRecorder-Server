@@ -34,6 +34,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         );
         const idToken = authResponse.data.idToken;
 
+        console.log("Removing IDs", req.body.ids);
+
         await removeIds("recordings", req.body.ids, idToken);
         await removeIds("recordingList", req.body.ids, idToken);
 
@@ -41,6 +43,6 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         res.json({ success: true });
     } catch (error) {
         res.status(500);
-        res.json({ success: false, error });
+        res.json({ success: false });
     }
 };
