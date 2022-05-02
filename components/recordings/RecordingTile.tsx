@@ -80,12 +80,19 @@ const RecordingTile = ({
             }));
 
         let totalProp = 0;
+        let minAlpha = recording.averageVelocity - recording.velocitySpread;
+        let maxAlpha = recording.averageVelocity + recording.velocitySpread;
+        const offset = 40;
+        minAlpha += offset;
+        maxAlpha += offset;
+
         const keys = usefulSemitones.map((semi, index) => {
+            const alpha = Math.min(1, Math.max(0, (minAlpha + (index / usefulSemitones.length) * (maxAlpha - minAlpha)) * 0.01));
             const key =
                 index === 0
-                    ? `hsl(${semi.hue}, 100%, 30%) 0%`
-                    : `hsl(${semi.hue}, 100%, 30%) ${totalProp}%`;
-            if (index > 0) totalProp += usefulSemitones[index - 1].proportion;
+                    ? `hsla(${semi.hue}, 100%, 30%, ${alpha}) 0%`
+                    : `hsla(${semi.hue}, 100%, 30%, ${alpha}) ${totalProp}%`;
+            totalProp += usefulSemitones[index].proportion;
             return key;
         });
         setGradient(`linear-gradient(90deg, ${keys.join(", ")})`);
