@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 import dayjs from "dayjs";
+import advancedFormat from "dayjs/plugin/advancedFormat";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
 
 import { RecordingMetadata } from "../../lib/data/types";
@@ -8,6 +9,8 @@ import style from "./RecordingTile.module.scss";
 import Link from "next/link";
 import { semitoneToHue } from "../../lib/utils";
 import StarToggle from "./StarToggle";
+
+dayjs.extend(advancedFormat);
 
 interface GradientSemitone {
     semitone: number;
@@ -126,7 +129,7 @@ const RecordingTile = ({
                     <a>
                         <p>
                             {recording.title ||
-                                dayjs(recording.recordedAt).format("D MMM YYYY - h:mm A")}
+                                dayjs(recording.recordedAt).format("Do MMM YYYY - h:mm A")}
                         </p>
                         <p className={style.duration}>
                             {durationToString(Math.round(recording.duration))}
