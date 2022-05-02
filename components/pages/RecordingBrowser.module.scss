@@ -27,6 +27,23 @@
     justify-content: space-between;
 }
 
+.intro {
+    h1 {
+        font-size: 3rem;
+        margin-bottom: 0;
+    }
+    p {
+        font-style: italic;
+        font-size: 0.8rem;
+        margin-bottom: 0;
+    }
+
+    a {
+        color: salmon;
+        text-decoration: underline;
+    }
+}
+
 .selectionButtons {
     display: flex;
     align-items: center;
