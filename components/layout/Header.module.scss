@@ -1,5 +1,5 @@
 .header {
-    width: 100vw;
+    width: calc(100vw - 20px);
     height: var(--header-height);
 
     background-color: var(--color-neutral-300);
