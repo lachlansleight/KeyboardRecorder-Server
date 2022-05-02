@@ -2,6 +2,8 @@
 
 ### v0.8.0
 
+_2nd May 2022_
+
 -  Improved home page display in various ways, including nicer tile rendering, better grouping, and some information text
 -  Added an error message to the header if the browser doesn't support WebMIDI
 -  Added a piano-roll background to the playback canvas
