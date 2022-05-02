@@ -11,7 +11,7 @@ const defaultOption = (
 );
 
 const MidiOutputDevice = (): JSX.Element => {
-    const { midi, enabled, outputDevice, setOutputDevice } = useMidi();
+    const { midi, enabled, outputDevice, setOutputDevice, supported } = useMidi();
     const [midiOutputDevices, setMidiOutputDevices] = useState<JSX.Element[]>([defaultOption]);
 
     const setMidiOutputDevice = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -65,13 +65,17 @@ const MidiOutputDevice = (): JSX.Element => {
 
     return (
         <div className={style.midiDropdown}>
-            <select
-                id={"midiDevice"}
-                value={outputDevice ? outputDevice.name : ""}
-                onChange={setMidiOutputDevice}
-            >
-                {midiOutputDevices}
-            </select>
+            {!supported ? (
+                <p>MIDI not supported<br/>on your browser!</p>
+            ) : (
+                <select
+                    id={"midiDevice"}
+                    value={outputDevice ? outputDevice.name : ""}
+                    onChange={setMidiOutputDevice}
+                >
+                    {midiOutputDevices}
+                </select>
+            )}
         </div>
     );
 };

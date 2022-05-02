@@ -9,4 +9,13 @@
         font-size: 1rem;
         margin-left: 1rem;
     }
+
+    p {
+        height: 100%;
+        display: grid;
+        place-items: center;
+        margin: 0 1rem;
+        color: salmon;
+        text-align: center;
+    }
 }

@@ -10,19 +10,23 @@ interface MidiContextValues {
     setInputDevice: (dev: Input) => void;
     setOutputDevice: (dev: Output) => void;
     enabled: boolean;
+    supported: boolean;
 }
 
 const useProvideMidi = () => {
     const [input, setInput] = useState(null);
     const [output, setOutput] = useState(null);
     const [enabled, setEnabled] = useState(false);
+    const [supported, setSupported] = useState(false);
 
     useEffect(() => {
         Midi.enable(err => {
             if (err) {
                 console.error(`Failed to enable MIDI: `, err);
+                setSupported(false);
             } else {
                 setEnabled(true);
+                setSupported(true);
 
                 const storedOutputDevice = localStorage.getItem("midiOutputDeviceName");
                 if (storedOutputDevice) {
@@ -58,6 +62,7 @@ const useProvideMidi = () => {
             else localStorage.removeItem("midiOutputDeviceName");
         },
         enabled,
+        supported,
     };
 };
 
