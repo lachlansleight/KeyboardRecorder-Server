@@ -12,7 +12,7 @@ const Layout = ({ children }: { children: JSX.Element[] | JSX.Element }): JSX.El
             </main>
             <footer>
                 <div className="container">
-                    <p>&copy; KeyboardRecorder 2021</p>
+                    <p>&copy; Lachlan Sleight 2022</p>
                     <p>Version {packageJson.version}</p>
                 </div>
             </footer>
