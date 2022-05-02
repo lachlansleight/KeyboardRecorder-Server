@@ -64,11 +64,11 @@ export const RecordingBrowser = (): JSX.Element => {
                         }
                         return;
                     }
-                    if (yearRecordings[djs.format("YYYY")]) {
-                        yearRecordings[djs.format("YYYY")].push(recording);
+                    if (yearRecordings[djs.format("MMMM YYYY")]) {
+                        yearRecordings[djs.format("MMMM YYYY")].push(recording);
                         return;
                     } else {
-                        yearRecordings[djs.format("YYYY")] = [recording];
+                        yearRecordings[djs.format("MMMM YYYY")] = [recording];
                     }
                 });
                 const finalGroups: RecordingGroup[] = [];
