@@ -86,6 +86,21 @@ const RecordingCanvas = ({
         const playingNotes: { active: boolean; time: number; progress: number }[] = [];
         for (let i = 0; i < 128; i++) playingNotes.push({ active: false, time: 0, progress: 0 });
 
+        for (let i = 21; i <= 109; i++) {
+            if (isBlackKey(i)) continue;
+
+            const x = getNoteX(i);
+            ctx.fillStyle = "rgba(255,255,255,0.0075)";
+            ctx.fillRect(x, 0, noteWidth, height);
+
+            if(i % 12 !== 0 && i % 12 !== 5) continue;
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.01)";
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+        }
+
         notes.forEach(note => {
             const x = getNoteX(note.pitch);
             const y1 = getTimeY(note.onTime);
