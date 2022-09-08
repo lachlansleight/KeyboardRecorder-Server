@@ -93,7 +93,7 @@ const RecordingCanvas = ({
             ctx.fillStyle = "rgba(255,255,255,0.0075)";
             ctx.fillRect(x, 0, noteWidth, height);
 
-            if(i % 12 !== 0 && i % 12 !== 5) continue;
+            if (i % 12 !== 0 && i % 12 !== 5) continue;
             ctx.strokeStyle = "rgba(255, 255, 255, 0.01)";
             ctx.beginPath();
             ctx.moveTo(x, 0);

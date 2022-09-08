@@ -25,6 +25,40 @@ export interface Message {
     time: number;
 }
 
+export const CalculateRecordingMetadata = (recording: Recording): RecordingMetadata => {
+    const duration = recording.messages.slice(-1)[0].time;
+
+    const semitoneSums = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let noteCount = 0;
+    let velocitySum = 0;
+    for (let i = 0; i < recording.messages.length; i++) {
+        if (recording.messages[i].type !== "noteOn") continue;
+        semitoneSums[recording.messages[i].pitch % 12]++;
+        velocitySum += recording.messages[i].velocity;
+        noteCount++;
+    }
+    const semitones = semitoneSums.map(count => count / noteCount);
+    const averageVelocity = velocitySum / noteCount;
+
+    let velocityErrorSum = 0;
+    for (let i = 0; i < recording.messages.length; i++) {
+        if (recording.messages[i].type !== "noteOn") continue;
+        velocityErrorSum +=
+            (averageVelocity - recording.messages[i].velocity) *
+            (averageVelocity - recording.messages[i].velocity);
+    }
+    const velocitySpread = Math.sqrt(velocityErrorSum / noteCount);
+
+    return {
+        recordedAt: new Date(new Date().valueOf() - duration * 1000),
+        duration,
+        messageCount: recording.messages.length,
+        averageVelocity,
+        velocitySpread,
+        semitones,
+    };
+};
+
 export const ExtractRecordingMetadata = (recording: Recording): RecordingMetadata => {
     const recordingMetadata: RecordingMetadata = {
         recordedAt: new Date(recording.recordedAt),

@@ -66,7 +66,11 @@ const MidiOutputDevice = (): JSX.Element => {
     return (
         <div className={style.midiDropdown}>
             {!supported ? (
-                <p>MIDI not supported<br/>on your browser!</p>
+                <p>
+                    MIDI not supported
+                    <br />
+                    on your browser!
+                </p>
             ) : (
                 <select
                     id={"midiDevice"}

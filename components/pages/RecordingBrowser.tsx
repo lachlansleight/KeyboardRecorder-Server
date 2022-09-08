@@ -137,8 +137,28 @@ export const RecordingBrowser = (): JSX.Element => {
                 <div className={style.heading}>
                     <div className={style.intro}>
                         <h1>Lachlan&apos;s Piano Recordings</h1>
-                        <p>Welcome! This is the playback engine for my MIDI recorder, an ESP32-based electronic device that automatically records and uploads everything I play on my digital piano. You can read all about how I built it on it&apos;s <a rel="noreferrer" target="_blank" href="https://lachlansleight.io/projects/midi-recorder">Weeklog project page.</a></p>
-                        <p>This is an almost entirely-unfiltered record of every note played on my piano, build with the intention of my eventually forgetting that it exists and removing &quot;recording anxiety&quot;. Because I don&apos;t spend any time curating these recordings, you shouldn&apos;t expect much quality, and you should expect a lot of repetition. The colours of each tile indicate the proportion of semitones that were played, and the opacity represents the velocities.</p>
+                        <p>
+                            Welcome! This is the playback engine for my MIDI recorder, an
+                            ESP32-based electronic device that automatically records and uploads
+                            everything I play on my digital piano. You can read all about how I
+                            built it on it&apos;s{" "}
+                            <a
+                                rel="noreferrer"
+                                target="_blank"
+                                href="https://lachlansleight.io/projects/midi-recorder"
+                            >
+                                Weeklog project page.
+                            </a>
+                        </p>
+                        <p>
+                            This is an almost entirely-unfiltered record of every note played on my
+                            piano, build with the intention of my eventually forgetting that it
+                            exists and removing &quot;recording anxiety&quot;. Because I don&apos;t
+                            spend any time curating these recordings, you shouldn&apos;t expect much
+                            quality, and you should expect a lot of repetition. The colours of each
+                            tile indicate the proportion of semitones that were played, and the
+                            opacity represents the velocities.
+                        </p>
                         <p>Click a tile to open the player - space bar pauses and unpauses.</p>
                     </div>
                     {user ? (

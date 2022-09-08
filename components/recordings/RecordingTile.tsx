@@ -90,7 +90,13 @@ const RecordingTile = ({
         maxAlpha += offset;
 
         const keys = usefulSemitones.map((semi, index) => {
-            const alpha = Math.min(1, Math.max(0, (minAlpha + (index / usefulSemitones.length) * (maxAlpha - minAlpha)) * 0.01));
+            const alpha = Math.min(
+                1,
+                Math.max(
+                    0,
+                    (minAlpha + (index / usefulSemitones.length) * (maxAlpha - minAlpha)) * 0.01
+                )
+            );
             const key =
                 index === 0
                     ? `hsla(${semi.hue}, 100%, 30%, ${alpha}) 0%`

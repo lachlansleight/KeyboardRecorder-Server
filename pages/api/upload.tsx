@@ -4,10 +4,13 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { resolve } from "path";
 import { parseRecording } from "../../lib/data/parse";
 import doCors from "lib/doCors";
+//import { createMidiFile } from "lib/midi/midiFile";
+//import FirebaseUtils from "lib/FirebaseUtils";
+//import initFirebase from "lib/initFirebase";
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     await doCors(req, res);
-    
+
     console.log("Received recording - /api/upload");
 
     const authResponse = await axios.post(
@@ -104,11 +107,21 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
                 `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${id}.json?auth=${idToken}`,
                 recordingMetadata
             );
+            //note - firebase v8 doesn't seem to support node.js, which sucks
+            //I think v9 does, but I really cbf doing that huge refactor right now...
+            //console.log("Uploading MIDI file");
+            //const midi = createMidiFile(recording);
+            //initFirebase();
+            //await FirebaseUtils.uploadFile(midi, `recordings/${id}.mid`, progress => {
+            //    //do nothing
+            //    console.log(progress);
+            //});
             console.log(recordingMetadata);
             res.statusCode = 201;
             res.json({ success: true });
             resolve();
         } catch (error) {
+            console.log("Error: ", error);
             await axios.post(
                 `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/errors.json?auth=${idToken}`,
                 {

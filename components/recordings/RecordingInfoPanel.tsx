@@ -10,6 +10,7 @@ import { Recording } from "../../lib/data/types";
 
 import style from "./RecordingInfoPanel.module.scss";
 import useAuth from "lib/auth/useAuth";
+import { createMidiFile } from "lib/midi/midiFile";
 
 const durationToString = (duration: number): string => {
     let output = "";
@@ -91,6 +92,14 @@ const RecordingInfoPanel = ({
         applyNote();
     };
 
+    const [midiUrl, setMidiUrl] = useState("");
+    useEffect(() => {
+        setTimeout(() => {
+            const data = createMidiFile(recording);
+            setMidiUrl(URL.createObjectURL(new Blob([data], { type: "audio/midi" })));
+        }, 1000);
+    }, [recording]);
+
     return (
         <div className={style.infoPanel} style={showing ? { right: "0px" } : null}>
             <h2>Recording Metadata</h2>
@@ -144,11 +153,26 @@ const RecordingInfoPanel = ({
                         )}
                     </div>
                 </div>
-                {user ? (
-                    <button className={style.deleteButton} onClick={() => deleteRecording()}>
-                        Delete Recording
-                    </button>
-                ) : null}
+
+                <div>
+                    <a
+                        href={midiUrl}
+                        className={style.deleteButton}
+                        style={{
+                            display: "block",
+                            textAlign: "center",
+                            backgroundColor: "forestgreen",
+                        }}
+                        download={`${recording.id}.mid`}
+                    >
+                        Download MIDI
+                    </a>
+                    {user ? (
+                        <button className={style.deleteButton} onClick={() => deleteRecording()}>
+                            Delete Recording
+                        </button>
+                    ) : null}
+                </div>
             </div>
         </div>
     );
