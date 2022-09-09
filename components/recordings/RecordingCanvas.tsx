@@ -201,11 +201,13 @@ const RecordingCanvas = ({
                 ctx.fillStyle = gradient;
                 ctx.fillRect(x, height - 140, noteWidth, 120);
 
-                particles.emit(
-                    { x: x + noteWidth * Math.random(), y: height - 20 },
-                    { x: 5 * (-0.5 + Math.random()), y: -80 * Math.random() },
-                    `hsla(${hue}, 100%, 50%, 0.5)`
-                );
+                if (Math.random() > playingNotes[i].progress) {
+                    particles.emit(
+                        { x: x + noteWidth * Math.random(), y: height - 20 },
+                        { x: 5 * (-0.5 + Math.random()), y: -80 * Math.random() },
+                        `hsla(${hue}, 100%, 50%, 0.5)`
+                    );
+                }
             }
 
             particles.update(time, delta);
