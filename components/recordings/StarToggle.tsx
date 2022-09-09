@@ -32,7 +32,7 @@ const StarToggle = ({
             setLoading(true);
             const result = await axios.post("/api/updateRecording", {
                 id: recording.id,
-                starred: !starred
+                starred: !starred,
             });
             setStarred(result.data.starred);
             if (onChange) onChange(result.data.starred);

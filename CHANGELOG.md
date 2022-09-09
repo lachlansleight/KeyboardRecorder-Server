@@ -7,6 +7,7 @@ _9th September 2022_
 -   Refactored the entire site to use TailwindCSS and Firebase v9 - and just generally be up to date with my newer more modern workflow
 -   Many associated minor style changes (mostly improvements!)
 -   Fixed a bug preventing me from modifying the database in any way
+-   Added pretty particles to the player :D
 
 ### v0.8.0
 

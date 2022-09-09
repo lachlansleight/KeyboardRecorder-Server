@@ -13,8 +13,14 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         );
         const idToken = authResponse.data.idToken;
 
-        await axios.patch(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${req.body.id}.json?auth=${idToken}`, req.body);
-        const metadata = await axios.patch(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${req.body.id}.json?auth=${idToken}`, req.body);
+        await axios.patch(
+            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${req.body.id}.json?auth=${idToken}`,
+            req.body
+        );
+        const metadata = await axios.patch(
+            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${req.body.id}.json?auth=${idToken}`,
+            req.body
+        );
 
         res.status(200);
         res.json(metadata.data);

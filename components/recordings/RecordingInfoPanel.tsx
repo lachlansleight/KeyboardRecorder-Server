@@ -53,7 +53,7 @@ const RecordingInfoPanel = ({
         if (!window.confirm("Really delete recording? This CANNOT be undone!")) return;
 
         await axios.post("/api/delete", {
-            id: recording.id
+            id: recording.id,
         });
         router.push("/");
     };
@@ -76,7 +76,7 @@ const RecordingInfoPanel = ({
         const applyNote = async () => {
             await axios.post("/api/updateRecording", {
                 id: recording.id,
-                note
+                note,
             });
         };
 

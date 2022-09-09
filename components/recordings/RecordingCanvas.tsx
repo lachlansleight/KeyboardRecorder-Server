@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from "react";
-import { Recording } from "../../lib/data/types";
-import { isBlackKey, semitoneToHue } from "../../lib/utils";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { Particles } from "lib/particles";
+import useAnimationFrame from "lib/hooks/useAnimationFrame";
+import { Recording } from "lib/data/types";
+import { isBlackKey, semitoneToHue } from "lib/utils";
 
 interface Note {
     pitch: number;
@@ -28,6 +30,26 @@ const RecordingCanvas = ({
 
     const [notes, setNotes] = useState<Note[]>([]);
     const [duration, setDuration] = useState(1);
+
+    const getNoteX = useCallback(
+        (pitch: number) => {
+            return width * ((pitch - 20.5) / 89) + (width / 88) * 0.5;
+        },
+        [width]
+    );
+
+    const particles = useMemo(() => {
+        return new Particles({
+            noiseStrength: 30,
+            startSize: 2,
+            noiseSpeed: 0.1,
+            noiseScale: 0.005,
+            maxParticles: 3000,
+            lifetime: 4,
+            attractors: [],
+            globalForce: { x: 0, y: 5 },
+        });
+    }, []);
 
     useEffect(() => {
         const notes: Note[] = [];
@@ -72,13 +94,173 @@ const RecordingCanvas = ({
         setDuration(lastTime);
     }, [recording]);
 
+    useAnimationFrame(
+        ({ time, delta }) => {
+            if (!canvasRef.current) return;
+            const ctx = canvasRef.current.getContext("2d");
+            if (!ctx) return;
+
+            const noteWidth = width / 88;
+
+            const getTimeY = (time: number) =>
+                height -
+                20 -
+                (height - 20) * ((time - (playbackTime || 0)) / (displayDuration || duration));
+
+            ctx.clearRect(0, 0, width, height);
+
+            const playingNotes: { active: boolean; time: number; progress: number }[] = [];
+            for (let i = 0; i < 128; i++)
+                playingNotes.push({ active: false, time: 0, progress: 0 });
+
+            for (let i = 21; i <= 109; i++) {
+                if (isBlackKey(i)) continue;
+
+                const x = getNoteX(i);
+                ctx.fillStyle = "rgba(255,255,255,0.0075)";
+                ctx.fillRect(x, 0, noteWidth, height);
+
+                if (i % 12 !== 0 && i % 12 !== 5) continue;
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.01)";
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+
+            notes.forEach(note => {
+                const x = getNoteX(note.pitch);
+                const y1 = getTimeY(note.onTime);
+                const y2 = getTimeY(note.offTime || note.onTime);
+                let l = 50;
+                let s = 50 + note.velocity / 2.54;
+                const notePlaying =
+                    playbackTime &&
+                    playbackTime > note.onTime &&
+                    playbackTime < (note.offTime || 0);
+                const noteProgress = !notePlaying
+                    ? 0
+                    : (playbackTime - note.onTime) / ((note.offTime || 0) - note.onTime);
+                if (notePlaying) {
+                    playingNotes[note.pitch] = {
+                        active: true,
+                        time: playbackTime - note.onTime,
+                        progress: noteProgress,
+                    };
+                    l = 90 - 40 * Math.min(1, playingNotes[note.pitch].time * 2);
+                    s = 100;
+                }
+                ctx.fillStyle = `hsl(${semitoneToHue(note.pitch % 12)}, ${s}%, ${l}%)`;
+                if (note.offTime && note.offTime - note.onTime > (displayDuration || 0) / 50) {
+                    const y3 = getTimeY(note.onTime + (displayDuration || 0) / 100);
+                    ctx.fillRect(x, y1, noteWidth, y3 - y1 - 1);
+
+                    ctx.beginPath();
+                    ctx.moveTo(x, y3);
+                    ctx.lineTo(x + noteWidth, y3);
+                    ctx.quadraticCurveTo(
+                        x + noteWidth * 0.5,
+                        y3 + (y2 - y3) * 0.5,
+                        x + noteWidth * 0.5,
+                        y2
+                    );
+                    ctx.quadraticCurveTo(x + noteWidth * 0.5, y3 + (y2 - y3) * 0.5, x, y3);
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(x, y1, noteWidth, y2 - y1);
+                }
+                //ctx.fillRect(x, y1, noteWidth, y2 - y1);
+            });
+
+            for (let i = 21; i <= 109; i++) {
+                const x = getNoteX(i);
+                const hue = semitoneToHue(i % 12);
+
+                const isBlack = isBlackKey(i);
+
+                if (isBlack) {
+                    ctx.fillStyle = playingNotes[i].active ? `hsl(${hue}, 100%, 50%)` : "#111";
+                    ctx.fillRect(x, height - 20, noteWidth, 20);
+                } else {
+                    if (playingNotes[i].active) {
+                        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                        ctx.fillRect(x, height - 20, noteWidth, 20);
+                    } else {
+                        ctx.fillStyle = "#CCC";
+                        ctx.fillRect(x, height - 20, noteWidth - 1, 20);
+                        ctx.strokeStyle = "#111";
+                        ctx.strokeRect(x, height - 20, noteWidth, 20);
+                    }
+                }
+
+                if (!playingNotes[i].active) continue;
+                const playingValue = Math.max(playingNotes[i].time, playingNotes[i].progress);
+                const gradient = ctx.createLinearGradient(x, height - 140, x, height - 20);
+                gradient.addColorStop(1, `hsla(${hue}, 100%, 50%, ${1.0 - playingValue})`);
+                gradient.addColorStop(0, `hsla(${hue}, 100%, 50%, 0)`);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, height - 140, noteWidth, 120);
+
+                particles.emit(
+                    { x: x + noteWidth * Math.random(), y: height - 20 },
+                    { x: 5 * (-0.5 + Math.random()), y: -80 * Math.random() },
+                    `hsla(${hue}, 100%, 50%, 0.5)`
+                );
+            }
+
+            particles.update(time, delta);
+            particles.draw(ctx);
+
+            //proper key widths - but needs to be replicated for the actual notes...
+            // ctx.fillStyle = "#FFF";
+            // ctx.fillRect(0, height - 20, width, 20);
+            // let xPos = noteWidth * 0.5;
+            // let lastWasBlack = false;
+            // for(let i = 21; i <= 109; i++) {
+            //     const isBlack = isBlackKey(i);
+            //     if(isBlack) {
+            //         ctx.fillStyle ="#111";
+            //         ctx.fillRect(xPos + noteWidth / 6, height - 20, noteWidth / 1.5, 10);
+            //         lastWasBlack = true;
+            //     } else {
+            //         if(!lastWasBlack) xPos += noteWidth * 0.5;
+            //         ctx.strokeStyle = "#111";
+            //         ctx.strokeRect(xPos, height - 20, noteWidth, 20);
+            //         lastWasBlack = false;
+            //     }
+            //     xPos += noteWidth * 0.5;
+            // }
+
+            // if(playbackTime) {
+            //     ctx.strokeStyle = "#FFF";
+            //     ctx.beginPath();
+            //     const y = getTimeY(playbackTime);
+            //     ctx.moveTo(0, y);
+            //     ctx.lineTo(width, y);
+            //     ctx.stroke();
+            // }
+        },
+        [
+            canvasRef,
+            notes,
+            duration,
+            width,
+            height,
+            playbackTime,
+            displayDuration,
+            particles,
+            getNoteX,
+        ]
+    );
+
+    /*
     useEffect(() => {
         if (!canvasRef.current) return;
         const ctx = canvasRef.current.getContext("2d");
         if (!ctx) return;
 
         const noteWidth = width / 88;
-        const getNoteX = (note: number) => width * ((note - 20.5) / 89) + noteWidth * 0.5;
+        
         const getTimeY = (time: number) =>
             height -
             20 -
@@ -204,6 +386,7 @@ const RecordingCanvas = ({
         //     ctx.stroke();
         // }
     }, [canvasRef, notes, duration, width, height, playbackTime, displayDuration]);
+    */
 
     return (
         <canvas

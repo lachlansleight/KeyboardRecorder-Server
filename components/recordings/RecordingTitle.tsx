@@ -27,7 +27,7 @@ const RecordingTitle = ({
         setEditingTitle(false);
         await axios.post("/api/updateRecording", {
             id: recording.id,
-            title
+            title,
         });
     };
 

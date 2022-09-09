@@ -71,6 +71,7 @@ const Header = ({ pathName = "/" }: { pathName?: string }): JSX.Element => {
                 <hr className="block md:hidden my-2 w-full border-neutral-600" />
                 {user ? (
                     <></>
+                ) : (
                     // <Link href="/dashboard">
                     //     <a
                     //         className={`${linkClass} ${
@@ -80,7 +81,6 @@ const Header = ({ pathName = "/" }: { pathName?: string }): JSX.Element => {
                     //         Dashboard
                     //     </a>
                     // </Link>
-                ) : (
                     <Link href="/login">
                         <a
                             className={`${linkClass} ${

@@ -21,7 +21,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         );
 
         res.status(200);
-        res.json({success: true});
+        res.json({ success: true });
     } catch (error) {
         res.status(500);
         res.json({ success: false, error });
