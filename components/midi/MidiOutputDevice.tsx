@@ -13,7 +13,7 @@ const MidiOutputDevice = (): JSX.Element => {
     const [midiOutputDevices, setMidiOutputDevices] = useState<JSX.Element[]>([defaultOption]);
 
     const setMidiOutputDevice = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        if (e.target.value === "Select MIDI Device") {
+        if (e.target.value === "") {
             setOutputDevice(null);
             return;
         }
@@ -28,7 +28,9 @@ const MidiOutputDevice = (): JSX.Element => {
     useEffect(() => {
         const doSet = () => {
             setMidiOutputDevices([
-                defaultOption,
+                <option key="none" value="">
+                    {midi.outputs.length > 0 ? "None" : "Select MIDI Device"}
+                </option>,
                 ...midi.outputs.map(output => {
                     return (
                         <option key={output.name} value={output.name}>
