@@ -101,18 +101,18 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
                 )
             ).data.name;
 
-            //duplicate a slightly simplified metadata to the list for displaying in lists
-            const recordingMetadata = ExtractRecordingMetadata(recording);
-            await axios.put(
-                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${id}.json?auth=${idToken}`,
-                recordingMetadata
-            );
-
             console.log("Uploading MIDI file");
             const midi = createMidiFile(recording);
             initFirebase();
             const newUrl = await FirebaseUtils.uploadBytes(midi, `recordings/${id}.mid`);
-            console.log("Uploaded at ", newUrl);
+
+            //duplicate a slightly simplified metadata to the list for displaying in lists
+            const recordingMetadata = ExtractRecordingMetadata(recording);
+            recordingMetadata.midiUrl = newUrl;
+            await axios.put(
+                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${id}.json?auth=${idToken}`,
+                recordingMetadata
+            );
 
             console.log(recordingMetadata);
             res.statusCode = 201;

@@ -12,6 +12,7 @@ export interface RecordingMetadata {
     title?: string;
     starred?: boolean;
     note?: string;
+    midiUrl?: string;
 }
 
 export interface Recording extends RecordingMetadata {
