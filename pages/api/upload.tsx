@@ -1,12 +1,12 @@
-import axios from "axios";
-import { ExtractRecordingMetadata } from "lib/data/types";
-import { NextApiRequest, NextApiResponse } from "next";
 import { resolve } from "path";
-import { parseRecording } from "../../lib/data/parse";
+import axios from "axios";
+import { NextApiRequest, NextApiResponse } from "next";
+import { ExtractRecordingMetadata } from "lib/data/types";
 import doCors from "lib/doCors";
-//import { createMidiFile } from "lib/midi/midiFile";
-//import FirebaseUtils from "lib/FirebaseUtils";
-//import initFirebase from "lib/initFirebase";
+import { parseRecording } from "lib/data/parse";
+import { createMidiFile } from "lib/midi/midiFile";
+import FirebaseUtils from "lib/FirebaseUtils";
+import initFirebase from "lib/initFirebase";
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     await doCors(req, res);
@@ -16,8 +16,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     const authResponse = await axios.post(
         `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY}`,
         {
-            email: process.env.NEXT_PUBLIC_FB_EMAIL,
-            password: process.env.NEXT_PUBLIC_FB_PASSWORD,
+            email: process.env.FB_EMAIL,
+            password: process.env.FB_PASSWORD,
             returnSecureToken: true,
         }
     );
@@ -63,7 +63,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     }
 
     const bytes: number[] = [];
-    const errors = [];
+    const errors: string[] = [];
     req.on("data", async chunk => {
         try {
             for (let i = 0; i < chunk.length; i++) {
@@ -107,15 +107,13 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
                 `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${id}.json?auth=${idToken}`,
                 recordingMetadata
             );
-            //note - firebase v8 doesn't seem to support node.js, which sucks
-            //I think v9 does, but I really cbf doing that huge refactor right now...
-            //console.log("Uploading MIDI file");
-            //const midi = createMidiFile(recording);
-            //initFirebase();
-            //await FirebaseUtils.uploadFile(midi, `recordings/${id}.mid`, progress => {
-            //    //do nothing
-            //    console.log(progress);
-            //});
+
+            console.log("Uploading MIDI file");
+            const midi = createMidiFile(recording);
+            initFirebase();
+            const newUrl = await FirebaseUtils.uploadBytes(midi, `recordings/${id}.mid`);
+            console.log("Uploaded at ", newUrl);
+
             console.log(recordingMetadata);
             res.statusCode = 201;
             res.json({ success: true });

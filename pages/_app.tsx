@@ -1,24 +1,18 @@
-import { AuthProvider } from "lib/auth/useAuth";
-import { AppProps } from "next/app";
+import { AppProps } from "next/dist/shared/lib/router/router";
+import { ReactNode } from "react";
+import "../styles/app.css";
+// import "react-datepicker/dist/react-datepicker.css";
+import { AuthProvider } from "lib/hooks/useAuth";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import initFirebase from "lib/initFirebase";
+import { MidiProvider } from "lib/midi/useMidi";
+import { PianoProvider } from "lib/piano/usePiano";
 
-import { Router } from "next/router";
-import NProgress from "nprogress";
-import "nprogress/nprogress.css";
+function MyApp({ Component, pageProps }: AppProps): ReactNode {
+    const firebaseApp = initFirebase();
 
-import initFirebase from "../lib/initFirebase";
-import { MidiProvider } from "../lib/midi/useMidi";
-import { PianoProvider } from "../lib/piano/usePiano";
-
-import "./index.scss";
-
-Router.events.on("routeChangeStart", () => NProgress.start());
-Router.events.on("routeChangeComplete", () => NProgress.done());
-Router.events.on("routeChangeError", () => NProgress.done());
-
-function MyApp({ Component, pageProps }: AppProps): JSX.Element {
-    initFirebase();
     return (
-        <AuthProvider>
+        <AuthProvider firebaseApp={firebaseApp}>
             <MidiProvider>
                 <PianoProvider options={{ velocities: 3 }}>
                     <Component {...pageProps} />

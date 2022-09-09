@@ -2,7 +2,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from "react
 import { Piano } from "./Piano";
 import { PianoOptions } from "./piano/Piano";
 
-const pianoContext = createContext(null);
+const pianoContext = createContext<Piano | null>(null);
 
 const useProvidePiano = ({ options }: { options: Partial<PianoOptions> }) => {
     const [piano, setPiano] = useState<Piano>();
@@ -27,12 +27,12 @@ const PianoProvider = ({
     children: ReactNode;
 }): JSX.Element => {
     const piano = useProvidePiano({ options });
-    return <pianoContext.Provider value={piano}>{children}</pianoContext.Provider>;
+    return <pianoContext.Provider value={piano || null}>{children}</pianoContext.Provider>;
 };
 
 export { PianoProvider };
 
-const usePiano = (): Piano => {
+const usePiano = (): Piano | null => {
     return useContext(pianoContext);
 };
 

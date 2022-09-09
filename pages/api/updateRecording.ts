@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
-import { RecordingMetadata, Recording, ExtractRecordingMetadata } from "../../lib/data/types";
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     try {
@@ -14,23 +13,11 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         );
         const idToken = authResponse.data.idToken;
 
-        const recordings: Record<string, Recording> = (
-            await axios(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings.json`)
-        ).data;
-
-        const recordingStubs: { [key: string]: RecordingMetadata } = {};
-
-        Object.keys(recordings).forEach(key => {
-            recordingStubs[key] = ExtractRecordingMetadata(recordings[key]);
-        });
-
-        await axios.put(
-            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList.json?auth=${idToken}`,
-            recordingStubs
-        );
+        await axios.patch(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${req.body.id}.json?auth=${idToken}`, req.body);
+        const metadata = await axios.patch(`${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${req.body.id}.json?auth=${idToken}`, req.body);
 
         res.status(200);
-        res.json({ success: true });
+        res.json(metadata.data);
     } catch (error) {
         res.status(500);
         res.json({ success: false, error });

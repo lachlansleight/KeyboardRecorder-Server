@@ -186,7 +186,7 @@ const RecordingPlayer = ({
         if (playing && !isPlaying) play();
         else if (!playing && isPlaying) stop();
 
-        pausedRef.current = paused;
+        pausedRef.current = paused || false;
     }, [playing, isPlaying, paused, pausedRef]);
 
     //send playback time callbacks
@@ -195,7 +195,7 @@ const RecordingPlayer = ({
         onPlaybackTimeChanged(playbackTime);
     }, [onPlaybackTimeChanged, playbackTime]);
 
-    return null;
+    return <></>;
 };
 
 export default RecordingPlayer;

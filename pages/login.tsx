@@ -1,82 +1,63 @@
+import { useCallback, useState } from "react";
+import Button from "components/controls/Button";
+import TextField from "components/controls/TextField";
 import Layout from "components/layout/Layout";
-import { useRouter } from "next/router";
-import useAuth from "lib/auth/useAuth";
-import { ChangeEvent, useState } from "react";
-
-import style from "./login.module.scss";
+import useAuth from "lib/hooks/useAuth";
 
 const Login = (): JSX.Element => {
-    const router = useRouter();
     const { user, loginAndRedirect } = useAuth();
 
-    const [data, setData] = useState({
-        email: "",
-        password: "",
-    });
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
 
-    const validateEmail = (email: string) => {
-        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return re.test(String(email).toLowerCase());
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!validateEmail(data.email)) {
-            setError("Email invalid");
+    const tryLogin = useCallback(() => {
+        if (!email || !password) {
+            setError("Please enter an email and password");
             return;
         }
-
-        setError("");
-        setLoading(true);
-        try {
-            await loginAndRedirect(data.email, data.password, "/");
-        } catch (error) {
-            setError(error.message);
+        //validate email with regex
+        if (!email.match(/^[^@]+@[^@]+\.[^@]+$/)) {
+            setError("Please enter a valid email");
+            return;
         }
-        setLoading(false);
-    };
+        const doLogin = async () => {
+            setError("");
+            try {
+                if (loginAndRedirect) await loginAndRedirect(email, password, "/");
+            } catch (e: any) {
+                setError(e.message);
+            }
+        };
 
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setData({ ...data, [e.target.id]: e.target.value });
-    };
-
-    if (user) router.push("/");
+        doLogin();
+    }, [email, password]);
 
     return (
         <Layout>
-            <h1>Login</h1>
-            <form className={style.loginForm} onSubmit={handleSubmit}>
-                <div className={style.control}>
-                    <label htmlFor="email">Email</label>
-                    <input
-                        type="text"
-                        id="email"
-                        value={data.email}
-                        onChange={handleChange}
-                        placeholder="Email"
-                    />
+            <h1 className="text-4xl mb-4">Login</h1>
+            {user ? (
+                <div>
+                    <p>You are already logged in!</p>
                 </div>
-                <div className={style.control}>
-                    <label htmlFor="password">Password</label>
-                    <input
+            ) : (
+                <div className="flex flex-col gap-2">
+                    <TextField label="Email" value={email} onChange={setEmail} />
+                    <TextField
+                        label="Password"
                         type="password"
-                        id="password"
-                        value={data.password}
-                        onChange={handleChange}
+                        value={password}
+                        onChange={setPassword}
                     />
+                    <Button
+                        className="bg-primary-800 rounded py-1 grid place-items-center text-lg"
+                        onClick={tryLogin}
+                    >
+                        Login
+                    </Button>
+                    {error && <p className="text-red-500 text-xs">{error}</p>}
                 </div>
-
-                {loading ? (
-                    <p className={style.loggingIn}>Logging in...</p>
-                ) : (
-                    <input type="submit" value="Login" />
-                )}
-
-                {error ? <p className={style.error}>{error}</p> : null}
-            </form>
+            )}
         </Layout>
     );
 };

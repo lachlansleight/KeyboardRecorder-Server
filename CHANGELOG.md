@@ -1,5 +1,13 @@
 # Changelog
 
+### v2.0.0
+
+_9th September 2022_
+
+-   Refactored the entire site to use TailwindCSS and Firebase v9 - and just generally be up to date with my newer more modern workflow
+-   Many associated minor style changes (mostly improvements!)
+-   Fixed a bug preventing me from modifying the database in any way
+
 ### v0.8.0
 
 _2nd May 2022_

@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect, ChangeEvent, useRef } from "react";
 import { useRouter } from "next/router";
 
 import dayjs from "dayjs";
@@ -6,11 +6,11 @@ import axios from "axios";
 import { FaWindowClose } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
 
-import { Recording } from "../../lib/data/types";
+import { Recording } from "lib/data/types";
 
-import style from "./RecordingInfoPanel.module.scss";
-import useAuth from "lib/auth/useAuth";
+import useAuth from "lib/hooks/useAuth";
 import { createMidiFile } from "lib/midi/midiFile";
+import useElementDimensions from "lib/hooks/useElementDimensions";
 
 const durationToString = (duration: number): string => {
     let output = "";
@@ -46,15 +46,15 @@ const RecordingInfoPanel = ({
     const [note, setNote] = useState("");
     const [editingNote, setEditingNote] = useState(false);
 
+    const divRef = useRef<HTMLDivElement>(null);
+    const { width } = useElementDimensions(divRef);
+
     const deleteRecording = async () => {
         if (!window.confirm("Really delete recording? This CANNOT be undone!")) return;
 
-        await axios.delete(
-            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${recording.id}.json`
-        );
-        await axios.delete(
-            `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${recording.id}.json`
-        );
+        await axios.post("/api/delete", {
+            id: recording.id
+        });
         router.push("/");
     };
 
@@ -65,7 +65,7 @@ const RecordingInfoPanel = ({
 
     useEffect(() => {
         if (!recording) return;
-        setNote(recording.note);
+        setNote(recording.note || "");
     }, [recording]);
 
     const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -74,18 +74,10 @@ const RecordingInfoPanel = ({
 
     const finishEditingNote = () => {
         const applyNote = async () => {
-            await axios.patch(
-                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${recording.id}.json`,
-                {
-                    note,
-                }
-            );
-            await axios.patch(
-                `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${recording.id}.json`,
-                {
-                    note,
-                }
-            );
+            await axios.post("/api/updateRecording", {
+                id: recording.id,
+                note
+            });
         };
 
         setEditingNote(false);
@@ -101,78 +93,87 @@ const RecordingInfoPanel = ({
     }, [recording]);
 
     return (
-        <div className={style.infoPanel} style={showing ? { right: "0px" } : null}>
-            <h2>Recording Metadata</h2>
-            <div className={style.closeButton} onClick={handleCloseClicked}>
-                <FaWindowClose />
-            </div>
-            <div className={style.infoPanelInner}>
-                <div>
-                    <div>
-                        <label>Record Time</label>
+        <div
+            className={`fixed z-10 bg-neutral-900 border-l border-white border-opacity-20 flex flex-col justify-between min-h-main px-4 py-8 transition-all top-14`}
+            ref={divRef}
+            style={{ right: showing ? "0px" : `-${width}px` }}
+        >
+            <div>
+                <div className="flex justify-between gap-4 items-center">
+                    <h2 className="text-3xl">Recording Metadata</h2>
+                    <button className={`text-4xl`} onClick={handleCloseClicked}>
+                        <FaWindowClose />
+                    </button>
+                </div>
+                <div className={`flex flex-col gap-2 mt-4`}>
+                    <div className="flex gap-4">
+                        <label className="font-bold w-36 text-right">Record Time</label>
                         <p>{dayjs(recording.recordedAt).format("h:mm a")}</p>
                     </div>
-                    <div>
-                        <label>Record Date</label>
+                    <div className="flex gap-4">
+                        <label className="font-bold w-36 text-right">Record Date</label>
                         <p>{dayjs(recording.recordedAt).format("DD MMMM YYYY")}</p>
                     </div>
-                    <div>
-                        <label>Duration</label>
+                    <div className="flex gap-4">
+                        <label className="font-bold w-36 text-right">Duration</label>
                         <p>{durationToString(Math.round(recording.duration))}</p>
                     </div>
-                    <div>
-                        <label>Message Count</label>
+                    <div className="flex gap-4">
+                        <label className="font-bold w-36 text-right">Message Count</label>
                         <p>{recording.messageCount}</p>
                     </div>
-                    <div>
-                        <label>Average Velocity</label>
+                    <div className="flex gap-4">
+                        <label className="font-bold w-36 text-right">Average Velocity</label>
                         <p>{Math.round(recording.averageVelocity)}</p>
                     </div>
-                    <div>
-                        <label>Velocity Spread</label>
+                    <div className="flex gap-4">
+                        <label className="font-bold w-36 text-right">Velocity Spread</label>
                         <p>{Math.round(recording.velocitySpread)}</p>
                     </div>
-                    <div className={style.note}>
-                        <label>Note</label>
+                    <div className="flex gap-4">
+                        <label className="font-bold w-36 text-right">Note</label>
                         {editingNote ? (
-                            <div>
+                            <div className="flex flex-col items-start gap-2">
                                 <textarea
                                     id="note"
                                     value={note}
                                     onChange={handleChange}
                                     onBlur={finishEditingNote}
+                                    className="bg-neutral-800 resize-none rounded text-white"
                                 ></textarea>
-                                <button onClick={finishEditingNote}>Set Note</button>
+                                <button
+                                    className="rounded bg-neutral-700 px-1"
+                                    onClick={finishEditingNote}
+                                >
+                                    Set Note
+                                </button>
                             </div>
                         ) : (
-                            <div onClick={user ? () => setEditingNote(true) : null}>
-                                <ReactMarkdown
-                                    source={note || (user ? "Click to enter a note" : "")}
-                                />
+                            <div onClick={user ? () => setEditingNote(true) : undefined}>
+                                <ReactMarkdown>
+                                    {note || (user ? "Click to enter a note" : "")}
+                                </ReactMarkdown>
                             </div>
                         )}
                     </div>
                 </div>
-
-                <div>
-                    <a
-                        href={midiUrl}
-                        className={style.deleteButton}
-                        style={{
-                            display: "block",
-                            textAlign: "center",
-                            backgroundColor: "forestgreen",
-                        }}
-                        download={`${recording.id}.mid`}
+            </div>
+            <div className="flex flex-col gap-4">
+                <a
+                    href={midiUrl}
+                    download={`${recording.id}.mid`}
+                    className="bg-primary-800 text-center rounded"
+                >
+                    Download MIDI
+                </a>
+                {user ? (
+                    <button
+                        className={`bg-red-800 rounded text-md`}
+                        onClick={() => deleteRecording()}
                     >
-                        Download MIDI
-                    </a>
-                    {user ? (
-                        <button className={style.deleteButton} onClick={() => deleteRecording()}>
-                            Delete Recording
-                        </button>
-                    ) : null}
-                </div>
+                        Delete Recording
+                    </button>
+                ) : null}
             </div>
         </div>
     );

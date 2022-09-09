@@ -1,6 +1,7 @@
 import { Param, ToneAudioNode, Unit, Volume } from "tone";
 
-type ToneAudioNodeOptions = import("tone/build/esm/core/context/ToneAudioNode").ToneAudioNodeOptions;
+type ToneAudioNodeOptions =
+    import("tone/build/esm/core/context/ToneAudioNode").ToneAudioNodeOptions;
 
 export interface PianoComponentOptions extends ToneAudioNodeOptions {
     volume: Unit.Decibels;

@@ -12,7 +12,7 @@ const removeIds = async (
     const filteredRecordings = Object.keys(currentResponse.data).filter(key => {
         return ids.findIndex((k: string) => k === key) === -1;
     });
-    const newRecordings = {};
+    const newRecordings: Record<string, any> = {};
     filteredRecordings.forEach(key => {
         newRecordings[key] = currentResponse.data[key];
     });
@@ -27,8 +27,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         const authResponse = await axios.post(
             `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY}`,
             {
-                email: process.env.NEXT_PUBLIC_FB_EMAIL,
-                password: process.env.NEXT_PUBLIC_FB_PASSWORD,
+                email: process.env.FB_EMAIL,
+                password: process.env.FB_PASSWORD,
                 returnSecureToken: true,
             }
         );
@@ -36,7 +36,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
 
         console.log("Removing IDs", req.body.ids);
 
-        await removeIds("recordings", req.body.ids, idToken);
+        //await removeIds("recordings", req.body.ids, idToken);
         await removeIds("recordingList", req.body.ids, idToken);
 
         res.status(200);

@@ -3,10 +3,9 @@ import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
+import { useRouter } from "next/router";
 
 import { RecordingMetadata } from "../../lib/data/types";
-import style from "./RecordingTile.module.scss";
-import Link from "next/link";
 import { semitoneToHue } from "../../lib/utils";
 import StarToggle from "./StarToggle";
 
@@ -51,9 +50,7 @@ const RecordingTile = ({
     onSelectChange?: (id: string) => void;
 }): JSX.Element => {
     const [gradient, setGradient] = useState("");
-
-    const [mainClass, setMainClass] = useState(style.recordingTile);
-    const [starred, setStarred] = useState(recording.starred);
+    const router = useRouter();
 
     useEffect(() => {
         if (!recording) return;
@@ -97,7 +94,7 @@ const RecordingTile = ({
                     (minAlpha + (index / usefulSemitones.length) * (maxAlpha - minAlpha)) * 0.01
                 )
             );
-            const key =
+            const key: string =
                 index === 0
                     ? `hsla(${semi.hue}, 100%, 30%, ${alpha}) 0%`
                     : `hsla(${semi.hue}, 100%, 30%, ${alpha}) ${totalProp}%`;
@@ -107,54 +104,46 @@ const RecordingTile = ({
         setGradient(`linear-gradient(90deg, ${keys.join(", ")})`);
     }, [recording]);
 
-    useEffect(() => {
-        setMainClass(starred ? `${style.recordingTile} ${style.isStarred}` : style.recordingTile);
-    }, [starred]);
-
     return (
         <div
-            className={`${mainClass} ${className ? className : ""}`}
-            style={{ background: gradient }}
+            className={`select-none cursor-pointer noselect group flex justify-between h-12 rounded relative px-4 border-2 border-white border-opacity-0 hover:border-opacity-50 transition-all text-shadow-md ${
+                className ? className : ""
+            }`}
+            style={{
+                backgroundImage: gradient,
+                backgroundRepeat: "no-repeat",
+                backgroundOrigin: "border-box",
+            }}
+            onClick={() => {
+                if (!selecting) {
+                    router.push(`/recording/${recording.id}`);
+                } else {
+                    if (onSelectChange && selecting) onSelectChange(recording.id || "");
+                }
+            }}
         >
-            {selecting ? (
-                <div
-                    onClick={() => {
-                        if (onSelectChange) onSelectChange(recording.id);
-                    }}
-                >
-                    <p>
-                        {recording.title ||
-                            dayjs(recording.recordedAt).format("D MMM YYYY - h:mm A")}
-                    </p>
-                    <p className={style.duration}>
-                        {durationToString(Math.round(recording.duration))}
-                    </p>
-                </div>
-            ) : (
-                <Link href={`/recording/${recording.id}`}>
-                    <a>
-                        <p>
-                            {recording.title ||
-                                dayjs(recording.recordedAt).format("Do MMM YYYY - h:mm A")}
-                        </p>
-                        <p className={style.duration}>
-                            {durationToString(Math.round(recording.duration))}
-                        </p>
-                    </a>
-                </Link>
-            )}
-            {selecting ? (
-                selected ? (
-                    <FaCheckCircle className={style.selectionIndicator} />
+            <div className="flex flex-col">
+                <p className="text-lg font-bold -mb-1">
+                    {recording.title || dayjs(recording.recordedAt).format("Do MMM YYYY - h:mm A")}
+                </p>
+                <p className="text-sm -mt-1">{durationToString(Math.round(recording.duration))}</p>
+            </div>
+            <div
+                className="text-2xl h-full grid place-items-center"
+                style={{
+                    filter: "drop-shadow(3px 3px 2px rgb(0 0 0 / 50%))",
+                }}
+            >
+                {selecting ? (
+                    selected ? (
+                        <FaCheckCircle className={""} />
+                    ) : (
+                        <FaRegCircle className={""} />
+                    )
                 ) : (
-                    <FaRegCircle className={style.selectionIndicator} />
-                )
-            ) : (
-                <StarToggle
-                    recording={recording}
-                    onChange={(starred: boolean) => setStarred(starred)}
-                />
-            )}
+                    <StarToggle recording={recording} needsHover={true} />
+                )}
+            </div>
         </div>
     );
 };

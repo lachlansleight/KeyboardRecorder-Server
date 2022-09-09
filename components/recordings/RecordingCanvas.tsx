@@ -24,7 +24,7 @@ const RecordingCanvas = ({
     displayDuration?: number;
     onClick?: () => void;
 }): JSX.Element => {
-    const canvasRef = useRef<HTMLCanvasElement>();
+    const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const [notes, setNotes] = useState<Note[]>([]);
     const [duration, setDuration] = useState(1);
@@ -73,14 +73,17 @@ const RecordingCanvas = ({
     }, [recording]);
 
     useEffect(() => {
+        if (!canvasRef.current) return;
+        const ctx = canvasRef.current.getContext("2d");
+        if (!ctx) return;
+
         const noteWidth = width / 88;
         const getNoteX = (note: number) => width * ((note - 20.5) / 89) + noteWidth * 0.5;
         const getTimeY = (time: number) =>
-            height - 20 - (height - 20) * ((time - playbackTime) / (displayDuration || duration));
+            height -
+            20 -
+            (height - 20) * ((time - (playbackTime || 0)) / (displayDuration || duration));
 
-        if (!canvasRef.current) return;
-
-        const ctx = canvasRef.current.getContext("2d");
         ctx.clearRect(0, 0, width, height);
 
         const playingNotes: { active: boolean; time: number; progress: number }[] = [];
@@ -108,10 +111,10 @@ const RecordingCanvas = ({
             let l = 50;
             let s = 50 + note.velocity / 2.54;
             const notePlaying =
-                playbackTime && playbackTime > note.onTime && playbackTime < note.offTime;
+                playbackTime && playbackTime > note.onTime && playbackTime < (note.offTime || 0);
             const noteProgress = !notePlaying
                 ? 0
-                : (playbackTime - note.onTime) / (note.offTime - note.onTime);
+                : (playbackTime - note.onTime) / ((note.offTime || 0) - note.onTime);
             if (notePlaying) {
                 playingNotes[note.pitch] = {
                     active: true,
@@ -122,8 +125,8 @@ const RecordingCanvas = ({
                 s = 100;
             }
             ctx.fillStyle = `hsl(${semitoneToHue(note.pitch % 12)}, ${s}%, ${l}%)`;
-            if (note.offTime && note.offTime - note.onTime > displayDuration / 50) {
-                const y3 = getTimeY(note.onTime + displayDuration / 100);
+            if (note.offTime && note.offTime - note.onTime > (displayDuration || 0) / 50) {
+                const y3 = getTimeY(note.onTime + (displayDuration || 0) / 100);
                 ctx.fillRect(x, y1, noteWidth, y3 - y1 - 1);
 
                 ctx.beginPath();
@@ -202,7 +205,15 @@ const RecordingCanvas = ({
         // }
     }, [canvasRef, notes, duration, width, height, playbackTime, displayDuration]);
 
-    return <canvas ref={canvasRef} width={width} height={height} onClick={onClick}></canvas>;
+    return (
+        <canvas
+            ref={canvasRef}
+            width={width}
+            height={height}
+            onClick={onClick}
+            className="absolute left-0 top-0 w-full h-full"
+        />
+    );
 };
 
 export default RecordingCanvas;

@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    @responsive {
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgb(0 0 0 / 50%);
+        }
+
+        .text-shadow-md {
+            text-shadow: 3px 3px 3px rgb(0 0 0 / 50%);
+        }
+
+        .text-shadow-lg {
+            text-shadow: 5px 15px 30px rgb(0 0 0 / 50%);
+        }
+
+        .text-shadow-none {
+            text-shadow: none;
+        }
+    }
+}

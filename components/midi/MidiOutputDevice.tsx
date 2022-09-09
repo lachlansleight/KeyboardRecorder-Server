@@ -2,10 +2,8 @@ import { useState, useEffect } from "react";
 import { WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
 import useMidi from "../../lib/midi/useMidi";
 
-import style from "./MidiOutputDevice.module.scss";
-
 const defaultOption = (
-    <option key={"none"} value={null}>
+    <option key={"none"} value={""}>
         Select MIDI Device
     </option>
 );
@@ -19,7 +17,7 @@ const MidiOutputDevice = (): JSX.Element => {
             setOutputDevice(null);
             return;
         }
-        const output = midi.getOutputByName(e.target.value);
+        const output = e.target.value === "" ? null : midi.getOutputByName(e.target.value);
         if (output) {
             setOutputDevice(output);
         } else {
@@ -64,18 +62,15 @@ const MidiOutputDevice = (): JSX.Element => {
     }, [midi, enabled]);
 
     return (
-        <div className={style.midiDropdown}>
+        <div>
             {!supported ? (
-                <p>
-                    MIDI not supported
-                    <br />
-                    on your browser!
-                </p>
+                <p className="text-red-300 text-center">MIDI not supported!</p>
             ) : (
                 <select
                     id={"midiDevice"}
                     value={outputDevice ? outputDevice.name : ""}
                     onChange={setMidiOutputDevice}
+                    className="bg-neutral-700 text-white border-none p-1 rounded"
                 >
                     {midiOutputDevices}
                 </select>

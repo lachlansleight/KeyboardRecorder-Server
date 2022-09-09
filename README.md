@@ -41,8 +41,8 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 
 NEXT_PUBLIC_DEVICE_MAC_ADDRESS=... [this is the MAC address of your ESP32, which is printed out to serial each time the firmware starts]
 
-NEXT_PUBLIC_FB_EMAIL=... [the email address of your manually-created firebase user]
-NEXT_PUBLIC_FB_PASSWORD=... [the password of your manually-created firebase user]
+FB_EMAIL=... [the email address of your manually-created firebase user]
+FB_PASSWORD=... [the password of your manually-created firebase user]
 ```
 
 4. Create a new vercel project and link it to your fork of this repo. Populate all the necessary environment variables with variables that match your .env file

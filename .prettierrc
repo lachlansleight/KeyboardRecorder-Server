@@ -3,5 +3,14 @@
     "printWidth": 100,
     "tabWidth": 4,
     "trailingComma": "es5",
-    "arrowParens": "avoid"
+    "arrowParens": "avoid",
+
+    "overrides": [
+        {
+            "files": "*.yml",
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
 }
