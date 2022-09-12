@@ -25,6 +25,9 @@ export class PianoString extends ToneAudioNode {
     constructor(options: PianoStringOptions) {
         super(options);
 
+        this._sampler = new Sampler();
+        this.output = new Sampler();
+
         // create the urls
         options.notes.forEach(note => (this._urls[note] = getNotesUrl(note, options.velocity)));
 

@@ -16,6 +16,7 @@ export class Harmonics extends PianoComponent {
 
     constructor(options: HarmonicsOptions) {
         super(options);
+        this._sampler = new Sampler();
 
         this._urls = {};
         const notes = getHarmonicsInRange(options.minNote, options.maxNote);

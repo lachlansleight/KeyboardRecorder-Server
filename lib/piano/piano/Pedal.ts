@@ -5,12 +5,15 @@ import { randomBetween } from "./Util";
 export class Pedal extends PianoComponent {
     private _downTime = Infinity;
 
-    private _currentSound: ToneBufferSource = null;
+    private _currentSound: ToneBufferSource | null = null;
 
     private _buffers: ToneAudioBuffers;
 
     constructor(options: PianoComponentOptions) {
         super(options);
+
+        this._currentSound = null;
+        this._buffers = new ToneAudioBuffers();
 
         this._downTime = Infinity;
     }

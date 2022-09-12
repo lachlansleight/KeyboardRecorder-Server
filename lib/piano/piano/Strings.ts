@@ -78,7 +78,7 @@ export class PianoStrings extends PianoComponent {
     triggerRelease(note: number, time: number): void {
         // trigger the release of all of the notes at that velociy
         if (this._activeNotes.has(note)) {
-            this._activeNotes.get(note).triggerRelease(Midi(note).toNote(), time);
+            this._activeNotes.get(note)?.triggerRelease(Midi(note).toNote(), time);
             this._activeNotes.delete(note);
         }
     }

@@ -266,7 +266,7 @@ export class Piano extends ToneAudioNode<PianoOptions> {
                 midi = Math.round(Midi(note).toMidi());
             }
 
-            if (!this._heldNotes.has(midi)) {
+            if (midi != null && !this._heldNotes.has(midi)) {
                 // record the start time and velocity
                 this._heldNotes.set(midi, { time, velocity });
 
@@ -289,7 +289,7 @@ export class Piano extends ToneAudioNode<PianoOptions> {
                 midi = Math.round(Midi(note).toMidi());
             }
 
-            if (this._heldNotes.has(midi)) {
+            if (midi != null && this._heldNotes.has(midi)) {
                 const prevNote = this._heldNotes.get(midi);
                 this._heldNotes.delete(midi);
 

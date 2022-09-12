@@ -21,6 +21,7 @@ export class Keybed extends PianoComponent {
 
     constructor(options: KeybedOptions) {
         super(options);
+        this._buffers = new ToneAudioBuffers();
 
         for (let i = options.minNote; i <= options.maxNote; i++) {
             this._urls[i] = getReleasesUrl(i);
