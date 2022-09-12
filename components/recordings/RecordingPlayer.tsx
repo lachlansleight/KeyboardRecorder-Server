@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
 import useMidi from "../../lib/midi/useMidi";
 import usePiano from "../../lib/piano/usePiano";
@@ -56,57 +56,78 @@ const RecordingPlayer = ({
     const startTimeRef = useRef<number>();
     const pausedRef = useRef<boolean>(false);
 
-    const [playbackTime, setPlaybackTime] = useState(0);
+    const firstNote = useMemo(() => {
+        return Math.max(0, recording.messages.filter(m => m.type === "noteOn")[0].time - 1);
+    }, [recording]);
+    const startPedal = useMemo(() => {
+        let pedal = false;
+        for (let i = 0; i < recording.messages.length; i++) {
+            if (recording.messages[i].type === "pedalOn") pedal = true;
+            else if (recording.messages[i].type === "pedalOff") pedal = false;
+            else if (recording.messages[i].type === "noteOn") {
+                break;
+            }
+        }
+        return pedal;
+    }, [recording]);
+
+    const [playbackTime, setPlaybackTime] = useState(firstNote);
     const [isPlaying, setIsPlaying] = useState(false);
 
     //send MIDI output
-    const midiHandleMessage = (message: Message) => {
-        if (!outputDevice) return;
-        switch (message.type) {
-            case "noteOn":
-                outputDevice.playNote(message.pitch, 1, {
-                    velocity: message.velocity / 127.0,
-                });
-                break;
-            case "noteOff":
-                outputDevice.stopNote(message.pitch, 1);
-                break;
-            case "pedalOn":
-                outputDevice.sendControlChange(64, 0);
-                outputDevice.sendControlChange(64, 127);
-                break;
-            case "pedalOff":
-                outputDevice.sendControlChange(64, 0);
-                break;
-            default:
-                console.error("Unexpected message type", message);
-        }
-    };
+    const midiHandleMessage = useCallback(
+        (message: Message) => {
+            if (!outputDevice) return;
+            switch (message.type) {
+                case "noteOn":
+                    outputDevice.playNote(message.pitch, 1, {
+                        velocity: message.velocity / 127.0,
+                    });
+                    break;
+                case "noteOff":
+                    outputDevice.stopNote(message.pitch, 1);
+                    break;
+                case "pedalOn":
+                    outputDevice.sendControlChange(64, 0);
+                    outputDevice.sendControlChange(64, 127);
+                    break;
+                case "pedalOff":
+                    outputDevice.sendControlChange(64, 0);
+                    break;
+                default:
+                    console.error("Unexpected message type", message);
+            }
+        },
+        [outputDevice]
+    );
 
     //send audio output
-    const audioHandleMessage = (message: Message) => {
-        if (!piano || !piano.loaded) return;
-        switch (message.type) {
-            case "noteOn":
-                piano.keyDown({
-                    note: getNoteName(message.pitch),
-                    velocity: message.velocity / 127.0,
-                });
-                break;
-            case "noteOff":
-                piano.keyUp({ note: getNoteName(message.pitch), velocity: 0 });
-                break;
-            case "pedalOn":
-                piano.pedalUp();
-                piano.pedalDown();
-                break;
-            case "pedalOff":
-                piano.pedalUp();
-                break;
-            default:
-                console.error("Unexpected message type", message);
-        }
-    };
+    const audioHandleMessage = useCallback(
+        (message: Message) => {
+            if (!piano || !piano.loaded) return;
+            switch (message.type) {
+                case "noteOn":
+                    piano.keyDown({
+                        note: getNoteName(message.pitch),
+                        velocity: message.velocity / 127.0,
+                    });
+                    break;
+                case "noteOff":
+                    piano.keyUp({ note: getNoteName(message.pitch), velocity: 0 });
+                    break;
+                case "pedalOn":
+                    piano.pedalUp();
+                    piano.pedalDown();
+                    break;
+                case "pedalOff":
+                    piano.pedalUp();
+                    break;
+                default:
+                    console.error("Unexpected message type", message);
+            }
+        },
+        [piano]
+    );
 
     //step through time and play messages as they come up
     const runPlayback = (time: number) => {
@@ -119,7 +140,21 @@ const RecordingPlayer = ({
             reqRef.current = requestAnimationFrame(runPlayback);
             return;
         }
-        const totalTime = (time - startTimeRef.current) / 1000.0;
+        const totalTime = firstNote + (time - startTimeRef.current) / 1000.0;
+        if (totalTime < firstNote + 0.1 && startPedal) {
+            midiHandleMessage({
+                type: "pedalOn",
+                pitch: 0,
+                velocity: 64,
+                time: totalTime,
+            });
+            audioHandleMessage({
+                type: "pedalOn",
+                pitch: 0,
+                velocity: 64,
+                time: totalTime,
+            });
+        }
         setPlaybackTime(totalTime);
 
         if (recording) {
@@ -159,7 +194,7 @@ const RecordingPlayer = ({
         prevTimeRef.current = 0;
         pausedRef.current = false;
         setIsPlaying(false);
-        setPlaybackTime(0);
+        setPlaybackTime(firstNote);
 
         //also turn off all the MIDI notes and the pedal
         if (outputDevice) {
