@@ -1,11 +1,16 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { setContext } from "tone";
 import { Piano } from "./Piano";
 import { PianoOptions } from "./piano/Piano";
 
-const pianoContext = createContext<Piano | null>(null);
+const pianoContext = createContext<{ piano: Piano | null; ctx: AudioContext | null }>({
+    piano: null,
+    ctx: null,
+});
 
 const useProvidePiano = ({ options }: { options: Partial<PianoOptions> }) => {
     const [piano, setPiano] = useState<Piano>();
+    const [ctx, setCtx] = useState<AudioContext | null>(null);
 
     useEffect(() => {
         const p = new Piano(options);
@@ -16,7 +21,13 @@ const useProvidePiano = ({ options }: { options: Partial<PianoOptions> }) => {
         setPiano(p);
     }, []);
 
-    return piano;
+    useEffect(() => {
+        const audioCtx = new (window.AudioContext || (window as any)["webkitAudioContext"])();
+        setContext(audioCtx);
+        setCtx(audioCtx);
+    }, []);
+
+    return { piano, ctx };
 };
 
 const PianoProvider = ({
@@ -26,13 +37,17 @@ const PianoProvider = ({
     options: Partial<PianoOptions>;
     children: ReactNode;
 }): JSX.Element => {
-    const piano = useProvidePiano({ options });
-    return <pianoContext.Provider value={piano || null}>{children}</pianoContext.Provider>;
+    const { piano, ctx } = useProvidePiano({ options });
+    return (
+        <pianoContext.Provider value={{ piano: piano || null, ctx }}>
+            {children}
+        </pianoContext.Provider>
+    );
 };
 
 export { PianoProvider };
 
-const usePiano = (): Piano | null => {
+const usePiano = (): { piano: Piano | null; ctx: AudioContext | null } => {
     return useContext(pianoContext);
 };
 

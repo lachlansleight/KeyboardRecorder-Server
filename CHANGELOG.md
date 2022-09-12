@@ -1,5 +1,13 @@
 # Changelog
 
+### v2.0.1
+
+_12th September 2022_
+
+-   Songs now begin just before the first note - removing long silences at the beginning
+-   Audio context now properly initializes when spacebar is pressed
+-   Changing MIDI device during playback should now work
+
 ### v2.0.0
 
 _9th September 2022_

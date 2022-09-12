@@ -49,7 +49,7 @@ const RecordingPlayer = ({
     onPlaybackTimeChanged?: (seconds: number) => void;
 }): JSX.Element => {
     const { outputDevice } = useMidi();
-    const piano = usePiano();
+    const { piano, ctx } = usePiano();
 
     const reqRef = useRef<number>();
     const prevTimeRef = useRef<number>();
@@ -181,11 +181,12 @@ const RecordingPlayer = ({
 
     //start playback
     const play = useCallback(() => {
+        if (ctx != null && ctx.state !== "running") ctx.resume();
         if (reqRef.current) cancelAnimationFrame(reqRef.current);
         reqRef.current = requestAnimationFrame(runPlayback);
         setIsPlaying(true);
         pausedRef.current = false;
-    }, [outputDevice]);
+    }, [outputDevice, ctx]);
 
     //stop playback
     const stop = () => {
