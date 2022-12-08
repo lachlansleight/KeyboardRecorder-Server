@@ -122,11 +122,11 @@ const RecordingTile = ({
                 }
             }}
         >
-            <div className="flex flex-col">
-                <p className="text-lg font-bold -mb-1">
+            <div className="flex flex-col justify-center">
+                <p className="text-sm font-bold">
                     {recording.title || dayjs(recording.recordedAt).format("Do MMM YYYY - h:mm A")}
                 </p>
-                <p className="text-sm -mt-1">{durationToString(Math.round(recording.duration))}</p>
+                <p className="text-xs">{durationToString(Math.round(recording.duration))}</p>
             </div>
             <div
                 className="text-2xl h-full grid place-items-center"

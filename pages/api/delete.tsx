@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import initFirebase from "lib/initFirebase";
+import FirebaseUtils from "lib/FirebaseUtils";
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     try {
@@ -19,6 +21,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
         await axios.delete(
             `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordingList/${req.body.id}.json?auth=${idToken}`
         );
+        initFirebase();
+        await FirebaseUtils.deleteFile(`recordings/${req.body.id}.mid`);
 
         res.status(200);
         res.json({ success: true });

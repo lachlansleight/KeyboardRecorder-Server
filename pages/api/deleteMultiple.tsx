@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import FirebaseUtils from "lib/FirebaseUtils";
 
 const removeIds = async (
     location: "recordings" | "recordingList",
@@ -38,6 +39,9 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
 
         //await removeIds("recordings", req.body.ids, idToken);
         await removeIds("recordingList", req.body.ids, idToken);
+        await Promise.all(
+            req.body.ids.map((id: string) => FirebaseUtils.deleteFile(`recordings/${id}.mid`))
+        );
 
         res.status(200);
         res.json({ success: true });

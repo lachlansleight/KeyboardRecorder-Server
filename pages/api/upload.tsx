@@ -101,10 +101,19 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
                 )
             ).data.name;
 
-            console.log("Uploading MIDI file");
-            const midi = createMidiFile(recording);
-            initFirebase();
-            const newUrl = await FirebaseUtils.uploadBytes(midi, `recordings/${id}.mid`);
+            let newUrl = "";
+
+            try {
+                console.log("Uploading MIDI file");
+                const midi = createMidiFile(recording);
+                console.log("Midi file created");
+                initFirebase();
+                console.log("Firebase initialized");
+                newUrl = await FirebaseUtils.uploadBytes(midi, `recordings/${id}.mid`);
+            } catch (err: any) {
+                console.log("Failed to create/upload MIDI file:");
+                console.error(err);
+            }
 
             //duplicate a slightly simplified metadata to the list for displaying in lists
             const recordingMetadata = ExtractRecordingMetadata(recording);
