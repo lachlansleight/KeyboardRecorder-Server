@@ -146,15 +146,18 @@ const HomePage = (): JSX.Element => {
                     </p>
                     <p className="text-sm italic mt-2">
                         This is an almost entirely-unfiltered record of every note played on my
-                        piano, build with the intention of my eventually forgetting that it exists
-                        and removing &quot;recording anxiety&quot;. Because I don&apos;t spend any
-                        time curating these recordings, you shouldn&apos;t expect much quality, and
-                        you should expect a lot of repetition. The colours of each tile indicate the
-                        proportion of semitones that were played, and the opacity represents the
-                        velocities.
+                        piano, built with the intention of my eventually forgetting that it exists
+                        and removing &quot;recording anxiety&quot;. 80% of what I play is
+                        improvisation, the other 20% is writing songs.</p>
+                    <p className="text-sm italic mt-2">Because I don&apos;t spend any
+                        time curating these recordings, you shouldn&apos;t expect basically every
+                        recording to be messy, halting and virtually unlistenable. The colours of
+                        each tile indicate the proportion of semitones that were played, and the
+                        opacity represents the velocities.
                     </p>
                     <p className="text-sm italic mt-2">
-                        Click a tile to open the player - space bar pauses and unpauses.
+                        Click a tile to open the player - space bar pauses and unpauses. Plus/Minus
+                        buttons to zoom in and out.
                     </p>
                 </div>
                 {user ? (
