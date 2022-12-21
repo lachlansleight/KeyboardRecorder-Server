@@ -14,10 +14,10 @@ const Layout = ({ children }: { children: ReactNode }): JSX.Element => {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <Header pathName={router ? router.pathname : "/"} />
-            <main className="flex flex-col w-screen min-h-main bg-neutral-900 text-white">
+            <main className="flex flex-col w-screen min-h-main bg-black text-white">
                 <div className="w-full flex-grow flex flex-col">{children}</div>
             </main>
-            <footer className="px-4 flex items-center h-footer bg-neutral-800 text-neutral-200">
+            <footer className="px-4 flex items-center h-footer bg-black text-neutral-700">
                 <div className="container mx-auto flex justify-between">
                     <p>&copy; LachlanSleight 2022</p>
                     <p>v{packageJson.version}</p>

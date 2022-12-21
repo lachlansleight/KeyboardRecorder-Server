@@ -72,7 +72,7 @@ const MidiOutputDevice = (): JSX.Element => {
                     id={"midiDevice"}
                     value={outputDevice ? outputDevice.name : ""}
                     onChange={setMidiOutputDevice}
-                    className="bg-neutral-700 text-white border-none p-1 rounded"
+                    className="bg-neutral-900 text-neutral-500 border-none p-1 rounded"
                 >
                     {midiOutputDevices}
                 </select>

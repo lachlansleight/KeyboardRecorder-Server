@@ -5,7 +5,7 @@ import { FaBars } from "react-icons/fa";
 import useAuth from "lib/hooks/useAuth";
 import MidiOutputDevice from "components/midi/MidiOutputDevice";
 
-const linkClass = "text-white";
+const linkClass = "text-neutral-400";
 const activeLinkClass = "text-green-300";
 
 const Header = ({ pathName = "/" }: { pathName?: string }): JSX.Element => {
@@ -43,16 +43,16 @@ const Header = ({ pathName = "/" }: { pathName?: string }): JSX.Element => {
     return (
         <header
             ref={headerRef}
-            className="flex flex-wrap flex-row justify-between items-center h-header md:space-x-4 bg-neutral-800 py-2 px-6 relative"
+            className="flex flex-wrap flex-row justify-between items-center h-header md:space-x-4 bg-black py-2 px-6 relative"
         >
             <Link href="/">
                 <a className="flex flex-row items-center">
-                    <span className="ml-3 text-xl font-bold text-white">MIDI Recorder</span>
+                    <span className="ml-3 text-xl font-bold text-neutral-400">MIDI Recorder</span>
                 </a>
             </Link>
             <button
                 aria-expanded={menuOpen}
-                className="grid place-items-center inline-block md:hidden w-8 h-8 text-white"
+                className="grid place-items-center md:hidden w-8 h-8 text-neutral-400"
                 onClick={() => setMenuOpen(!menuOpen)}
             >
                 <FaBars className="text-2xl" />

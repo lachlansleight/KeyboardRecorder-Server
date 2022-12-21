@@ -44,7 +44,7 @@ const RecordingCanvas = ({
             startSize: 2,
             noiseSpeed: 0.1,
             noiseScale: 0.005,
-            maxParticles: 3000,
+            maxParticles: 5000,
             lifetime: 4,
             attractors: [],
             globalForce: { x: 0, y: 5 },
@@ -128,6 +128,9 @@ const RecordingCanvas = ({
                 ctx.stroke();
             }
 
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, width, height);
+
             notes.forEach(note => {
                 const x = getNoteX(note.pitch);
                 const y1 = getTimeY(note.onTime);
@@ -150,13 +153,27 @@ const RecordingCanvas = ({
                     l = 90 - 40 * Math.min(1, playingNotes[note.pitch].time * 2);
                     s = 100;
                 }
+
+                // const gradient = ctx.createLinearGradient(x, y1, x + noteWidth, y2);
+                // gradient.addColorStop(0, `hsla(${semitoneToHue(note.pitch % 12)}, ${s}%, ${l}%, 1)`);
+                // gradient.addColorStop(0.5, `hsla(${semitoneToHue(note.pitch % 12)}, ${s}%, ${l}%, 0.5)`);
+                // gradient.addColorStop(1, `hsla(${semitoneToHue(note.pitch % 12)}, ${s}%, ${l}%, 0)`);
+                // ctx.fillStyle = gradient;
+                // ctx.fillRect(x, y1, noteWidth, y2 - y1);
+
+                // return;
+
                 ctx.fillStyle = `hsl(${semitoneToHue(note.pitch % 12)}, ${s}%, ${l}%)`;
                 if (note.offTime && note.offTime - note.onTime > (displayDuration || 0) / 50) {
                     const y3 = getTimeY(note.onTime + (displayDuration || 0) / 100);
-                    ctx.fillRect(x, y1, noteWidth, y3 - y1 - 1);
+                    //ctx.fillRect(x, y1, noteWidth, y3 - y1);
 
                     ctx.beginPath();
-                    ctx.moveTo(x, y3);
+                    ctx.moveTo(x + noteWidth, y3);
+                    ctx.lineTo(x + noteWidth, y1);
+                    ctx.lineTo(x, y1);
+                    ctx.lineTo(x, y3);
+                    //ctx.moveTo(x, y3);
                     ctx.lineTo(x + noteWidth, y3);
                     ctx.quadraticCurveTo(
                         x + noteWidth * 0.5,
@@ -174,26 +191,65 @@ const RecordingCanvas = ({
 
             for (let i = 21; i <= 109; i++) {
                 const x = getNoteX(i);
-                const hue = semitoneToHue(i % 12);
+                let hue = semitoneToHue(i % 12);
 
                 const isBlack = isBlackKey(i);
 
+                let playingNoteDistance = -1;
+                if (!playingNotes[i].active) {
+                    for (let j = 1; j < 5; j++) {
+                        const offsetIndexUp = i + j;
+                        const offsetIndexDn = i - j;
+                        if (offsetIndexDn >= 21) {
+                            if (playingNotes[offsetIndexDn].active) {
+                                playingNoteDistance =
+                                    playingNoteDistance < 0 ? j : Math.min(playingNoteDistance, j);
+                                if (playingNoteDistance === j) {
+                                    hue = semitoneToHue(offsetIndexDn % 12);
+                                }
+                            }
+                        }
+                        if (offsetIndexUp <= 109) {
+                            if (playingNotes[offsetIndexUp].active) {
+                                playingNoteDistance =
+                                    playingNoteDistance < 0 ? j : Math.min(playingNoteDistance, j);
+                                if (playingNoteDistance === j) {
+                                    hue = semitoneToHue(offsetIndexUp % 12);
+                                }
+                            }
+                        }
+                    }
+                }
+                const alpha =
+                    Math.pow(
+                        (playingNoteDistance === -1 ? 0 : 1 - playingNoteDistance / 4) * 0.5,
+                        2
+                    ) + 0.05;
+
                 if (isBlack) {
-                    ctx.fillStyle = playingNotes[i].active ? `hsl(${hue}, 100%, 50%)` : "#111";
+                    ctx.fillStyle = playingNotes[i].active
+                        ? `hsl(${hue}, 100%, 50%)`
+                        : `hsl(${hue}, ${playingNoteDistance >= 0 ? "100%" : "0%"}, ${Math.round(
+                              15 * alpha
+                          )}%)`;
                     ctx.fillRect(x, height - 20, noteWidth, 20);
                 } else {
                     if (playingNotes[i].active) {
                         ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
                         ctx.fillRect(x, height - 20, noteWidth, 20);
                     } else {
-                        ctx.fillStyle = "#CCC";
+                        ctx.fillStyle = `hsl(${hue}, ${
+                            playingNoteDistance >= 0 ? "100%" : "0%"
+                        }, ${Math.round(100 * alpha)}%)`;
                         ctx.fillRect(x, height - 20, noteWidth - 1, 20);
                         ctx.strokeStyle = "#111";
                         ctx.strokeRect(x, height - 20, noteWidth, 20);
                     }
                 }
 
-                if (!playingNotes[i].active) continue;
+                if (!playingNotes[i].active) {
+                    continue;
+                }
                 const playingValue = Math.max(playingNotes[i].time, playingNotes[i].progress);
                 const gradient = ctx.createLinearGradient(x, height - 140, x, height - 20);
                 gradient.addColorStop(1, `hsla(${hue}, 100%, 50%, ${1.0 - playingValue})`);
@@ -201,12 +257,15 @@ const RecordingCanvas = ({
                 ctx.fillStyle = gradient;
                 ctx.fillRect(x, height - 140, noteWidth, 120);
 
-                if (Math.random() > playingNotes[i].progress) {
-                    particles.emit(
-                        { x: x + noteWidth * Math.random(), y: height - 20 },
-                        { x: 5 * (-0.5 + Math.random()), y: -80 * Math.random() },
-                        `hsla(${hue}, 100%, 50%, 0.5)`
-                    );
+                const particleAttemptCount = 5;
+                for (let j = 0; j < particleAttemptCount; j++) {
+                    if (Math.random() > playingNotes[i].progress) {
+                        particles.emit(
+                            { x: x + noteWidth * Math.random(), y: height - 20 },
+                            { x: 5 * (-0.5 + Math.random()), y: -80 * Math.random() },
+                            `hsla(${hue}, 100%, 50%, 0.5)`
+                        );
+                    }
                 }
             }
 

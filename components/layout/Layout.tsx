@@ -17,7 +17,7 @@ const Layout = ({ children }: { children: ReactNode }): JSX.Element => {
             <main className="pt-4 pb-12 px-4 min-h-main bg-neutral-900 text-white">
                 <div className="container mx-auto">{children}</div>
             </main>
-            <footer className="px-4 flex items-center h-footer bg-neutral-800 text-neutral-200">
+            <footer className="px-4 flex items-center h-footer bg-black text-neutral-200">
                 <div className="container mx-auto flex justify-between">
                     <p>&copy; LachlanSleight 2022</p>
                     <p>v{packageJson.version}</p>
