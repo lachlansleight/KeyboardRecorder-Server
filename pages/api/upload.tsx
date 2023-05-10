@@ -34,8 +34,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
             }
         );
         console.error("No mac address provided");
-        res.status(401);
-        res.json(new Error("No authorization provided"));
+        res.status(401).json(new Error("No authorization provided"));
         return;
     } else {
         const mac = auth.split(" ").slice(-1)[0];
@@ -49,15 +48,13 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
                 }
             );
             console.error("Device " + mac + " not authorized to upload");
-            res.status(401);
-            res.json(new Error("Device not authorized to upload"));
+            res.status(401).json(new Error("Device not authorized to upload"));
             return;
         }
     }
 
     if (req.body) {
-        res.statusCode = 400;
-        res.json({ success: false });
+        res.status(400).json({ success: false });
         resolve();
         return;
     }
