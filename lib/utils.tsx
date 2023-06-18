@@ -1,3 +1,5 @@
+import falloffData from "./falloffs.json";
+
 export const semitoneToHue = (semitone: number): number => {
     semitone = semitone % 12;
     switch (semitone) {
@@ -58,4 +60,81 @@ export const isBlackKey = (pitch: number): boolean => {
             return false;
     }
     return false;
+};
+
+/** The idea here is to take in a MIDI pitch and (assuming it is held forever) return an approximate volume curve */
+export const getKeyFalloff = (pitch: number, velocity: number, time: number): number => {
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * Math.max(0, Math.min(1, t));
+
+    if (time > 25) return 0;
+
+    //clamp pitch and velocity to valid ranges
+    pitch = Math.min(Math.max(pitch, 24), 108);
+    velocity = Math.min(Math.max(velocity, 15), 127);
+
+    //get actual pitch and velocity values that exist in the dataset, to be used for interpolation
+    const lowerPitch = Math.floor(pitch / 3) * 3;
+    const upperPitch = Math.floor(pitch / 3) * 3 + 3;
+    const lowerVelocity = Math.floor(velocity / 16) * 16 + 15;
+    const upperVelocity = Math.floor(velocity / 16) * 16 + 31;
+
+    //console.log({pitch, velocity, lowerPitch, upperPitch, lowerVelocity, upperVelocity})
+
+    const timeBin = Math.max(0, Math.log2(time * 10) - 1);
+    const timeBinIndex = Math.floor(timeBin);
+    const timeBinT = timeBin % 1.0;
+
+    //console.log({timeBin, timeBinIndex, timeBinT});
+
+    const data: Record<string, Record<string, number[]>> = falloffData;
+
+    const _pv = data[lowerPitch][lowerVelocity];
+    const _pV = data[lowerPitch][upperVelocity];
+    const _Pv = data[upperPitch][lowerVelocity];
+    const _PV = data[upperPitch][upperVelocity];
+
+    if (!_pv || !_pV || !_Pv || !_PV) {
+        console.error("Missing data for ", { pitch, velocity, time });
+        return 0;
+    }
+
+    const pv =
+        _pv.length > timeBinIndex
+            ? lerp(
+                  _pv[timeBinIndex],
+                  _pv.length > timeBinIndex + 1 ? _pv[timeBinIndex + 1] : 0,
+                  timeBinT
+              )
+            : 0;
+    const pV =
+        _pV.length > timeBinIndex
+            ? lerp(
+                  _pV[timeBinIndex],
+                  _pV.length > timeBinIndex + 1 ? _pV[timeBinIndex + 1] : 0,
+                  timeBinT
+              )
+            : 0;
+    const Pv =
+        _Pv.length > timeBinIndex
+            ? lerp(
+                  _Pv[timeBinIndex],
+                  _Pv.length > timeBinIndex + 1 ? _Pv[timeBinIndex + 1] : 0,
+                  timeBinT
+              )
+            : 0;
+    const PV =
+        _PV.length > timeBinIndex
+            ? lerp(
+                  _PV[timeBinIndex],
+                  _PV.length > timeBinIndex + 1 ? _PV[timeBinIndex + 1] : 0,
+                  timeBinT
+              )
+            : 0;
+
+    //console.log({pv, pV, Pv, PV});
+
+    const vT = (velocity - lowerVelocity) / (upperVelocity - lowerVelocity);
+    const pT = (pitch - lowerPitch) / (upperPitch - lowerPitch);
+
+    return lerp(lerp(pv, Pv, pT), lerp(pV, PV, pT), vT);
 };

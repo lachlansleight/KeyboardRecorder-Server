@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Particles } from "lib/particles";
 import useAnimationFrame from "lib/hooks/useAnimationFrame";
 import { Recording } from "lib/data/types";
-import { isBlackKey, semitoneToHue } from "lib/utils";
+import { getKeyFalloff, isBlackKey, semitoneToHue } from "lib/utils";
 
 interface Note {
     pitch: number;
@@ -109,9 +109,14 @@ const RecordingCanvas = ({
 
             ctx.clearRect(0, 0, width, height);
 
-            const playingNotes: { active: boolean; time: number; progress: number }[] = [];
+            const playingNotes: {
+                active: boolean;
+                time: number;
+                velocity: number;
+                progress: number;
+            }[] = [];
             for (let i = 0; i < 128; i++)
-                playingNotes.push({ active: false, time: 0, progress: 0 });
+                playingNotes.push({ active: false, time: 0, velocity: 0, progress: 0 });
 
             for (let i = 21; i <= 109; i++) {
                 if (isBlackKey(i)) continue;
@@ -148,6 +153,7 @@ const RecordingCanvas = ({
                     playingNotes[note.pitch] = {
                         active: true,
                         time: playbackTime - note.onTime,
+                        velocity: note.velocity,
                         progress: noteProgress,
                     };
                     l = 90 - 40 * Math.min(1, playingNotes[note.pitch].time * 2);
@@ -250,7 +256,9 @@ const RecordingCanvas = ({
                 if (!playingNotes[i].active) {
                     continue;
                 }
-                const playingValue = Math.max(playingNotes[i].time, playingNotes[i].progress);
+                const playingValue =
+                    1 - getKeyFalloff(i, playingNotes[i].velocity, playingNotes[i].time);
+                //const playingValue = Math.max(playingNotes[i].time, playingNotes[i].progress);
                 const gradient = ctx.createLinearGradient(x, height - 140, x, height - 20);
                 gradient.addColorStop(1, `hsla(${hue}, 100%, 50%, ${1.0 - playingValue})`);
                 gradient.addColorStop(0, `hsla(${hue}, 100%, 50%, 0)`);
@@ -259,7 +267,7 @@ const RecordingCanvas = ({
 
                 const particleAttemptCount = 5;
                 for (let j = 0; j < particleAttemptCount; j++) {
-                    if (Math.random() > playingNotes[i].progress) {
+                    if (Math.random() > playingValue) {
                         particles.emit(
                             { x: x + noteWidth * Math.random(), y: height - 20 },
                             { x: 5 * (-0.5 + Math.random()), y: -80 * Math.random() },
