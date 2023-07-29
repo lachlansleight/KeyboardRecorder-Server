@@ -32,11 +32,13 @@ export const parseRecording = (bytes: number[]): Recording => {
     const duration = messages.slice(-1)[0].time;
 
     const semitoneSums = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const pitchCounts = Array.from({ length: 128 }).map(() => 0);
     let noteCount = 0;
     let velocitySum = 0;
     for (let i = 0; i < messages.length; i++) {
-        if (messages[i].type !== "noteOn") continue;
+        if (messages[i].type !== "noteOn" || messages[i].pitch <= 0) continue;
         semitoneSums[messages[i].pitch % 12]++;
+        pitchCounts[messages[i].pitch]++;
         velocitySum += messages[i].velocity;
         noteCount++;
     }
@@ -45,7 +47,7 @@ export const parseRecording = (bytes: number[]): Recording => {
 
     let velocityErrorSum = 0;
     for (let i = 0; i < messages.length; i++) {
-        if (messages[i].type !== "noteOn") continue;
+        if (messages[i].type !== "noteOn" || messages[i].pitch <= 0) continue;
         velocityErrorSum +=
             (averageVelocity - messages[i].velocity) * (averageVelocity - messages[i].velocity);
     }
@@ -59,5 +61,6 @@ export const parseRecording = (bytes: number[]): Recording => {
         averageVelocity,
         velocitySpread,
         semitones,
+        pitchCounts,
     };
 };

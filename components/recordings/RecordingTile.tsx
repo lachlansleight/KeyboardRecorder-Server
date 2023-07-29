@@ -55,7 +55,14 @@ const RecordingTile = ({
     useEffect(() => {
         if (!recording) return;
 
-        const newSemitones: GradientSemitone[] = recording.semitones
+        let weightedSemitones = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        let totalWeight = 0;
+        recording.pitchCounts.forEach((p, i) => {
+            weightedSemitones[i % 12] += p * (1 - i / 127);
+            totalWeight += p * (1 - i / 127);
+        });
+        weightedSemitones = weightedSemitones.map(c => c / totalWeight);
+        const newSemitones: GradientSemitone[] = weightedSemitones
             .map((t, index) => {
                 return {
                     semitone: index,

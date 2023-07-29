@@ -192,6 +192,7 @@ export const parseMidiFile = (file: Uint8Array): Recording => {
         recordedAt: new Date(),
         duration: 0,
         semitones: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        pitchCounts: Array.from({ length: 128 }).map(() => 0),
         averageVelocity: 0,
         velocitySpread: 0,
         messageCount: 0,
