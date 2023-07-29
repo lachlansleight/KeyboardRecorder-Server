@@ -97,6 +97,7 @@ const RecordingInfoPanel = ({
             className={`fixed z-10 bg-neutral-900 border-l border-white border-opacity-20 flex flex-col justify-between min-h-main px-4 py-8 transition-all top-14`}
             ref={divRef}
             style={{ right: showing ? "0px" : `-${width}px` }}
+            onClick={e => e.stopPropagation()}
         >
             <div>
                 <div className="flex justify-between gap-4 items-center">

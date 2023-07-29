@@ -120,7 +120,16 @@ const RecordingPage = ({ recording }: { recording: Recording }): JSX.Element => 
 
     return (
         <FullscreenLayout>
-            <div className={`flex-grow relative`} ref={parentRef}>
+            <div
+                className={`flex-grow relative`}
+                ref={parentRef}
+                onClick={() => {
+                    if (!playing) {
+                        setPlaying(true);
+                        setFirstPlay(true);
+                    } else setPaused(!paused);
+                }}
+            >
                 <RecordingCanvas
                     recording={recording}
                     width={canvasWidth}
@@ -144,14 +153,17 @@ const RecordingPage = ({ recording }: { recording: Recording }): JSX.Element => 
                         height: "8rem",
                     }}
                 >
-                    <p>Press space to play and stop</p>
+                    <p>Press space or click to play and stop</p>
                 </div>
 
                 <div
                     className={`absolute top-0 h-0.5 bg-white bg-opacity-30`}
                     ref={playbackBarRef}
                 />
-                <div className="relative flex justify-between p-4 text-4xl h-10">
+                <div
+                    className="relative flex justify-between p-4 text-4xl h-10"
+                    onClick={e => e.stopPropagation()}
+                >
                     <StarToggle recording={recording} />
                     <RecordingTitle
                         recording={recording}
