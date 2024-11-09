@@ -43,7 +43,7 @@ const RecordingPlayer = ({
     paused,
     onPlaybackTimeChanged,
 }: {
-    recording: Recording;
+    recording: Recording | null;
     playing?: boolean;
     paused?: boolean;
     onPlaybackTimeChanged?: (seconds: number) => void;
@@ -57,9 +57,11 @@ const RecordingPlayer = ({
     const pausedRef = useRef<boolean>(false);
 
     const firstNote = useMemo(() => {
+        if (!recording) return 0;
         return Math.max(0, recording.messages.filter(m => m.type === "noteOn")[0].time - 1);
     }, [recording]);
     const startPedal = useMemo(() => {
+        if (!recording) return false;
         let pedal = false;
         for (let i = 0; i < recording.messages.length; i++) {
             if (recording.messages[i].type === "pedalOn") pedal = true;
@@ -130,63 +132,71 @@ const RecordingPlayer = ({
     );
 
     //step through time and play messages as they come up
-    const runPlayback = (time: number) => {
-        if (!startTimeRef.current) startTimeRef.current = time;
+    const runPlayback = useCallback(
+        (time: number) => {
+            if (!startTimeRef.current) startTimeRef.current = time;
 
-        const deltaTime = (time - (prevTimeRef.current || 0)) / 1000.0;
-        if (pausedRef.current) {
-            startTimeRef.current += deltaTime * 1000;
+            const deltaTime = (time - (prevTimeRef.current || 0)) / 1000.0;
+            if (pausedRef.current) {
+                startTimeRef.current += deltaTime * 1000;
+                prevTimeRef.current = time;
+                reqRef.current = requestAnimationFrame(runPlayback);
+                return;
+            }
+            const totalTime = firstNote + (time - startTimeRef.current) / 1000.0;
+            if (totalTime < firstNote + 0.1 && startPedal) {
+                midiHandleMessage({
+                    type: "pedalOn",
+                    pitch: 0,
+                    velocity: 64,
+                    time: totalTime,
+                });
+                audioHandleMessage({
+                    type: "pedalOn",
+                    pitch: 0,
+                    velocity: 64,
+                    time: totalTime,
+                });
+            }
+            setPlaybackTime(totalTime);
+
+            if (recording) {
+                //find those messages which have a time between the last frame time and the current frame time
+                const messages = recording.messages.filter(message => {
+                    return (
+                        (message.time < totalTime && message.time > totalTime - deltaTime) ||
+                        (totalTime === 0 && message.time === 0)
+                    );
+                });
+                messages.forEach(message => {
+                    midiHandleMessage(message);
+                    audioHandleMessage(message);
+                });
+            }
+
             prevTimeRef.current = time;
-            reqRef.current = requestAnimationFrame(runPlayback);
-            return;
-        }
-        const totalTime = firstNote + (time - startTimeRef.current) / 1000.0;
-        if (totalTime < firstNote + 0.1 && startPedal) {
-            midiHandleMessage({
-                type: "pedalOn",
-                pitch: 0,
-                velocity: 64,
-                time: totalTime,
-            });
-            audioHandleMessage({
-                type: "pedalOn",
-                pitch: 0,
-                velocity: 64,
-                time: totalTime,
-            });
-        }
-        setPlaybackTime(totalTime);
 
-        if (recording) {
-            //find those messages which have a time between the last frame time and the current frame time
-            const messages = recording.messages.filter(message => {
-                return (
-                    (message.time < totalTime && message.time > totalTime - deltaTime) ||
-                    (totalTime === 0 && message.time === 0)
-                );
-            });
-            messages.forEach(message => {
-                midiHandleMessage(message);
-                audioHandleMessage(message);
-            });
-        }
-
-        prevTimeRef.current = time;
-
-        //so long as there's still duration to go, continue playing
-        //three extra seconds for effect
-        if (totalTime < recording.duration + 3) reqRef.current = requestAnimationFrame(runPlayback);
-        else stop();
-    };
+            //so long as there's still duration to go, continue playing
+            //three extra seconds for effect
+            if (recording && totalTime < recording.duration + 3)
+                reqRef.current = requestAnimationFrame(runPlayback);
+            else stop();
+        },
+        [recording]
+    );
 
     //start playback
     const play = useCallback(() => {
         if (ctx != null && ctx.state !== "running") ctx.resume();
         if (reqRef.current) cancelAnimationFrame(reqRef.current);
+        if (!recording) {
+            setIsPlaying(false);
+            return;
+        }
         reqRef.current = requestAnimationFrame(runPlayback);
         setIsPlaying(true);
         pausedRef.current = false;
-    }, [outputDevice, ctx]);
+    }, [recording, outputDevice, ctx]);
 
     //stop playback
     const stop = () => {
@@ -215,7 +225,7 @@ const RecordingPlayer = ({
         return () => {
             stop();
         };
-    }, []);
+    }, [recording]);
 
     //update play state based on playing prop
     useEffect(() => {

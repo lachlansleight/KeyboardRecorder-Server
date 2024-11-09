@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
-import { useRouter } from "next/router";
 
 import { RecordingMetadata } from "../../lib/data/types";
 import { semitoneToHue } from "../../lib/utils";
 import StarToggle from "./StarToggle";
 
+dayjs.extend(utc);
 dayjs.extend(advancedFormat);
+dayjs.extend(timezone);
 
 interface GradientSemitone {
     semitone: number;
@@ -39,18 +43,25 @@ const durationToString = (duration: number): string => {
 const RecordingTile = ({
     recording,
     className,
+    style,
     selecting,
     selected,
+    playbackTime = null,
+    onMouseEnter,
+    onMouseLeave,
     onSelectChange,
 }: {
     recording: RecordingMetadata;
     className?: string;
+    style?: React.CSSProperties;
     selecting?: boolean;
     selected?: boolean;
+    playbackTime: number | null;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
     onSelectChange?: (id: string) => void;
 }): JSX.Element => {
     const [gradient, setGradient] = useState("");
-    const router = useRouter();
 
     useEffect(() => {
         if (!recording) return;
@@ -112,46 +123,65 @@ const RecordingTile = ({
     }, [recording]);
 
     return (
-        <div
-            className={`select-none cursor-pointer noselect group flex justify-between h-12 rounded relative px-4 border-2 border-white border-opacity-0 hover:border-opacity-50 transition-all text-shadow-md ${
-                className ? className : ""
-            }`}
-            style={{
-                backgroundImage: gradient,
-                backgroundRepeat: "no-repeat",
-                backgroundOrigin: "border-box",
-            }}
-            onClick={() => {
-                if (!selecting) {
-                    router.push(`/recording/${recording.id}`);
-                } else {
-                    if (onSelectChange && selecting) onSelectChange(recording.id || "");
-                }
-            }}
-        >
-            <div className="flex flex-col justify-center">
-                <p className="text-sm font-bold">
-                    {recording.title || dayjs(recording.recordedAt).format("Do MMM YYYY - h:mm A")}
-                </p>
-                <p className="text-xs">{durationToString(Math.round(recording.duration))}</p>
-            </div>
-            <div
-                className="text-2xl h-full grid place-items-center"
+        <Link href={selecting ? "" : `/recording/${recording.id}`}>
+            <a
+                className={`select-none cursor-pointer noselect group flex justify-between h-12 rounded relative px-4 border-2 border-white border-opacity-0 hover:border-opacity-50 transition-all text-shadow-md relative ${
+                    className ? className : ""
+                }`}
                 style={{
-                    filter: "drop-shadow(3px 3px 2px rgb(0 0 0 / 50%))",
+                    backgroundImage: gradient,
+                    backgroundRepeat: "no-repeat",
+                    backgroundOrigin: "border-box",
+                    ...style,
                 }}
+                onClick={() => {
+                    if (!selecting) return;
+                    if (onSelectChange) onSelectChange(recording.id || "");
+                }}
+                onMouseEnter={onMouseEnter}
+                onMouseLeave={onMouseLeave}
             >
-                {selecting ? (
-                    selected ? (
-                        <FaCheckCircle className={""} />
+                <div className="flex flex-col justify-center">
+                    <p className="text-sm font-bold">
+                        {recording.title ||
+                            dayjs(recording.recordedAt)
+                                .tz("Australia/Melbourne")
+                                .format(
+                                    recording.duration > 300
+                                        ? "Do MMM YYYY - hA"
+                                        : recording.duration > 120
+                                        ? "D/MM/YY - HH:mm"
+                                        : "D/MM/YY"
+                                )}
+                    </p>
+                    <p className="text-xs">{durationToString(Math.round(recording.duration))}</p>
+                </div>
+                <div
+                    className="text-2xl h-full grid place-items-center"
+                    style={{
+                        filter: "drop-shadow(3px 3px 2px rgb(0 0 0 / 50%))",
+                    }}
+                >
+                    {selecting ? (
+                        selected ? (
+                            <FaCheckCircle className={""} />
+                        ) : (
+                            <FaRegCircle className={""} />
+                        )
                     ) : (
-                        <FaRegCircle className={""} />
-                    )
-                ) : (
-                    <StarToggle recording={recording} needsHover={true} />
+                        <StarToggle recording={recording} needsHover={true} />
+                    )}
+                </div>
+                {playbackTime !== null && (
+                    <div
+                        className="h-full w-1 bg-white bg-opacity-50 absolute top-0"
+                        style={{
+                            left: (playbackTime / recording.duration) * 100 + "%",
+                        }}
+                    />
                 )}
-            </div>
-        </div>
+            </a>
+        </Link>
     );
 };
 

@@ -6,7 +6,8 @@ import axios from "axios";
 import useAuth from "lib/hooks/useAuth";
 import Layout from "components/layout/Layout";
 import RecordingTile from "components/recordings/RecordingTile";
-import { RecordingMetadata } from "lib/data/types";
+import { Recording, RecordingMetadata } from "lib/data/types";
+import RecordingPlayer from "components/recordings/RecordingPlayer";
 
 interface RecordingGroup {
     name: string;
@@ -25,11 +26,14 @@ const HomePage = (): JSX.Element => {
         const recordingListRef = ref(db, "recordingList");
         onValue(recordingListRef, snapshot => {
             //const newRecordingData = {...snapshot.val(), id: snapshot.key};
-            const sortedRecordings = Object.keys(snapshot.val())
-                .map(key => ({ ...snapshot.val()[key], id: key }))
+            const val = snapshot.val();
+            const sortedRecordings = Object.keys(val)
+                .map(key => ({ ...val[key], id: key }))
+                .filter(r => r.duration > 10)
                 .sort(
                     (a, b) => new Date(b.recordedAt).valueOf() - new Date(a.recordedAt).valueOf()
                 );
+
             const todayRecordings: RecordingMetadata[] = [];
             const yesterdayRecordings: RecordingMetadata[] = [];
             const thisWeekRecordings: RecordingMetadata[] = [];
@@ -98,7 +102,22 @@ const HomePage = (): JSX.Element => {
                     recordings: yearRecordings[year],
                 });
             });
+
+            const randomChoices: RecordingMetadata[] = [];
+            for (let i = 0; i < 8; i++) {
+                let choice = sortedRecordings[Math.floor(Math.random() * sortedRecordings.length)];
+                while (randomChoices.findIndex(c => c.id === choice.id) !== -1) {
+                    choice = sortedRecordings[Math.floor(Math.random() * sortedRecordings.length)];
+                }
+                randomChoices.push(choice);
+            }
+            //insert first
+            finalGroups.unshift({
+                name: "Eight Random Recordings",
+                recordings: randomChoices,
+            });
             setRecordings(finalGroups);
+            console.log(finalGroups);
             setLoading(false);
         });
     }, []);
@@ -126,8 +145,42 @@ const HomePage = (): JSX.Element => {
         doDelete();
     };
 
+    const [currentRecording, setCurrentRecording] = useState<Recording | null>(null);
+    const [playing, setPlaying] = useState(false);
+    const [clickedStart] = useState(false);
+    const [playbackTime, setPlaybackTime] = useState<number | null>(null);
+
+    // const loadAndPlay = useCallback(
+    //     async (metadata: RecordingMetadata) => {
+    //         if (currentRecording?.id === metadata.id) return;
+    //         if (!clickedStart) return;
+    //         if (!metadata.id) {
+    //             setCurrentRecording(null);
+    //             setPlaying(false);
+    //             setPlaybackTime(null);
+    //             return;
+    //         }
+    //         const response = await axios(
+    //             `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/recordings/${metadata.id}.json`
+    //         );
+    //         const recording: Recording = { ...response.data, id: metadata.id };
+    //         setCurrentRecording(recording);
+    //         setPlaying(true);
+    //         setPlaybackTime(0);
+    //     },
+    //     [currentRecording, clickedStart]
+    // );
+
     return (
         <Layout>
+            {clickedStart && (
+                <RecordingPlayer
+                    recording={currentRecording}
+                    playing={playing}
+                    paused={false}
+                    onPlaybackTimeChanged={setPlaybackTime}
+                />
+            )}
             <div className={``}>
                 <div className={``}>
                     <h1 className="text-5xl font-bold">Lachlan&apos;s Piano Recordings</h1>
@@ -193,6 +246,7 @@ const HomePage = (): JSX.Element => {
                 ) : (
                     <div className={``}></div>
                 )}
+                {/* {!clickedStart && <p className="text-2xl border rounded-lg px-2 py-1 grid place-items-center cursor-pointer" onClick={() => setClickedStart(true)}>Click me to enable hover playback</p>} */}
             </div>
             {loading ? (
                 <div className="mt-8 h-36 grid place-items-center">
@@ -200,17 +254,31 @@ const HomePage = (): JSX.Element => {
                 </div>
             ) : (
                 <div className="">
-                    {recordings.map(recordingGroup => {
+                    {recordings.map((recordingGroup, i) => {
                         return (
-                            <div key={recordingGroup.name} className="mt-4">
-                                <h2 className="text-2xl font-bold">{recordingGroup.name}</h2>
-                                <div className="grid md:grid-cols-4 gap-2">
+                            // <p>{recordingGroup.name}</p>
+                            <div key={i} className="mt-4">
+                                {/* add tooltip: */}
+                                <h2
+                                    className="text-2xl font-bold text-center"
+                                    title={`${(
+                                        recordingGroup.recordings.reduce(
+                                            (acc, rec) => acc + rec.duration,
+                                            0
+                                        ) / 3600
+                                    ).toFixed(1)} hours across ${
+                                        recordingGroup.recordings.length
+                                    } recordings`}
+                                >
+                                    {recordingGroup.name}
+                                </h2>
+                                <div className="flex flex-wrap justify-center items-center gap-2">
                                     {recordingGroup.recordings.map(recording => {
                                         return (
                                             <RecordingTile
                                                 key={recording.recordedAt.valueOf()}
                                                 recording={recording}
-                                                className={
+                                                className={`${
                                                     selecting
                                                         ? selected.findIndex(
                                                               id => id === recording.id
@@ -218,7 +286,12 @@ const HomePage = (): JSX.Element => {
                                                             ? ""
                                                             : ""
                                                         : ""
-                                                }
+                                                }`}
+                                                style={{
+                                                    width: `calc(1.5 * ${
+                                                        recording.duration / 60
+                                                    }rem + 8rem)`,
+                                                }}
                                                 selecting={selecting}
                                                 selected={
                                                     selected.findIndex(
@@ -226,6 +299,20 @@ const HomePage = (): JSX.Element => {
                                                     ) !== -1
                                                 }
                                                 onSelectChange={handleSelectChanged}
+                                                onMouseEnter={() => {
+                                                    // loadAndPlay(recording);
+                                                }}
+                                                onMouseLeave={() => {
+                                                    setCurrentRecording(null);
+                                                    setPlaying(false);
+                                                }}
+                                                playbackTime={
+                                                    currentRecording &&
+                                                    recording.id === currentRecording.id &&
+                                                    playbackTime !== null
+                                                        ? playbackTime
+                                                        : null
+                                                }
                                             />
                                         );
                                     })}
