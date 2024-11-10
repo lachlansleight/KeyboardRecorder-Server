@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import packageJson from "package.json";
 import Header from "./Header";
 
-const Layout = ({ children }: { children: ReactNode }): JSX.Element => {
+const Layout = ({ children }: { children?: ReactNode }): JSX.Element => {
     const router = useRouter();
 
     return (
